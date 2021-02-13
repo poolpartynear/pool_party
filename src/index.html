@@ -1,41 +1,247 @@
 <!DOCTYPE html>
-<body>
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <script src="http://code.jquery.com/jquery.js"></script>
-  <title>Testing contracts</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Pool Party</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <!-- <link href="assets/css/fonts.css" rel="stylesheet"> -->
+
+  <!-- Vendor CSS Files -->
+
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/vendor/fontawesome-free/css/all.min.css"/>
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: Bootslander - v3.0.0
+  * Template URL: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
 </head>
 
 <body>
-  <div class="container" style="margin:30px; font-size:20px">
 
-    <section id="pool-info">
-      The pool has: <span id="pool-tickets"> _ </span> N <br>
-      The prize is: <span id="pool-prize"> _ </span> N <br>
-      And it can be raffle in the timestamp: <span id="prize-timestamp"> _</span><br>
-      The past winners are: <span id="winners"></span><br>
-    </section>
-    <br>
-    <section id='logged-out' style="display:none">
-      You are not logged in, please: 
-      <button type="button" onclick="login()"> Login </button>
-    </section>
-    <section id='logged-in' style="display:none">
-      Logged in as: <span id="account"> </span>
-      <button type="button" onclick="logout()"> Logout </button> <br>
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex align-items-center justify-content-between">
+
+      <div class="logo">
+        <!-- <h1><a href="index.html"><span>Pool Party</span></a></h1> -->
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <!-- <a href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
+      </div>
+
+      <nav class="nav-menu d-none d-lg-block">
+        <ul>
+          <li class="active"><a href="index.html">Home</a></li>
+          <li><a href="#details">How does it work?</a></li>
+          <li><a href="#counts">Join the party</a></li>
+          <li id="login-btn" class="logged-out"><a href="" onclick="login()" type="button">Login</a></li>
+          <li id="logout-btn" class="logged-in"><a href="" onclick="logout()" type="button">Logout</a></li>
+
+        </ul>
+      </nav><!-- .nav-menu -->
+
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+
+    <div class="container">
+      <div class="row justify-content-between">
+        <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex align-items-center">
+          <div data-aos="zoom-out">
+            <h1>Jump in the <span>Pool</span></h1>
+            <h2>Make money by doing something I quite don't understand yet.</h2>
+            
+            <div class="text-center text-lg-start">
+              <a href="#counts" class="btn-get-started scrollto">Join the Party</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="300">
+          <img src="assets/img/logo.svg" class="img-fluid animated" alt="">
+        </div>
+      </div>
+    </div>
+
+    <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28 " preserveAspectRatio="none">
+      <defs>
+        <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z">
+      </defs>
+      <g class="wave1">
+        <use xlink:href="#wave-path" x="50" y="3" fill="rgba(255,255,255, .1)">
+      </g>
+      <g class="wave2">
+        <use xlink:href="#wave-path" x="50" y="0" fill="rgba(255,255,255, .2)">
+      </g>
+      <g class="wave3">
+        <use xlink:href="#wave-path" x="50" y="9" fill="#fff">
+      </g>
+    </svg>
+
+  </section><!-- End Hero -->
+
+  <main id="main">
+
+    <!-- ======= Details Section ======= -->
+    <section id="details" class="details">
+      <div class="container">
+
+        <div class="row content">
+          <div class="col-md-4" data-aos="fade-right">
+            <img src="assets/img/details-1.png" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-8 pt-4" data-aos="fade-up">
+            <h3>Con dinopianito nunca perdes, con dinopianito siempre ganas.</h3>
+            <p class="font-italic">
+              Pool party is a protocol for no-loss money games powered by NEAR.
+            </p>
+            <ul>
+              <i class="fas fa-ticket-alt"></i> Buy tickets to enter the pool and participate in the raffle.</li>
+              <li><i class="fas fa-dice"></i> The more tickets you have, the more chances you have to win.</li>
+              <li><i class="fas fa-trophy"></i> Prizes are made up of the interest earned on all deposited money in the pool.</li>
+              <li><i class="fas fa-swimming-pool"></i> You can get out of the pool whenever you want and never lose anything.</li>
+            </ul>
+            <p>
+              What are you waiting for? Give us the money!
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Details Section -->
+
+    <!-- ======= Counts Section ======= -->
+    <section id="counts" class="counts">
+      <div class="container">
+
+        <div class="row justify-content-md-center" data-aos="fade-up">
+ 
+          <div class="col-lg-3 col-md-6 mt-5 mt-md-0">
+            <div class="count-box">
+              <i class="fas fa-ticket-alt"></i>
+              <span data-toggle="counter-up">50,000</span>
+              <p>Total Tickets</p>
+              <span data-toggle="counter-up">500</span>
+              <p>Are Yours</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="fas fa-trophy"></i>
+              <span data-toggle="counter-up">1,463</span>
+              <p>Prize (NEAR) until now</p>
+              <span data-toggle="counter-up">2,463</span>
+              <p>Proyected at the end</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="fas fa-hourglass-half"></i>
+              <span id="time-left">5</span>
+              <p>Until next raffle</p>
+            </div>
+          </div>
+
+        </div>
+        <div class="row justify-content-md-center mt-5 " data-aos="fade-up">
+ 
+          <div class="col-lg-8 col-md-8 mt-5 mt-md-0">
+            <div class="count-box text-center">
+              <i class="fas fa-dice"></i>
+              <span>Your odds at winning are <span data-toggle="counter-up" >0.5</span> Buy more tickets!</span>
+              <form class="form-inline justify-content-center mt-2">
+                <input type="number" class="form-control mr-sm-2 tickets-input" placeholder="How many?" aria-label="ticket-amount" id="how-much-input" aria-describedby="basic-addon2">
+              </form>
+              <p style="font-style: italic;">The more tickets you have, the more chances to win. 1 Ticket == 1 NEAR</p><br>
+              <a type="button" class="btn-get-started scrollto">Buy Tickets</a>
+            </div>
+          </div>
+
+        </div>
+        <div class="row justify-content-md-center mt-5" data-aos="fade-up">
+ 
+          <div class="col-lg-6 col-md-6 mt-5 mt-md-0">
+            <div class="count-box">
+              <i class="fas fa-swimming-pool"></i>
+              <span>Exchange <span data-toggle="counter-up">500</span> Tickets</span>
+              <p>You can return your tickets and get out of the pool. Your refund in NEARS will be available in 3 days. You will not be eligible for the next raffle.</p>
+              <a type="button" class="btn-get-started scrollto">Get out</a>
+              <!-- <span data-toggle="counter-up">500</span> -->
+              <!-- <p>Are Yours</p> -->
+            </div>
+          </div>
+
+          <div class="col-lg-6 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="fas fa-money-bill"></i>
+              <span>Exchange <span data-toggle="counter-up" >123</span> NEARS</span>
+              <p>You can withdraw the NEARs back to your account, or exchange them for more tickets.</p>
+              <a type="button" class="btn-get-started scrollto">Withdraw your NEARS</a>
+              <a type="button" class="btn-get-started scrollto">Exchange them for tickets</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      </div>
       
-      You staked: <span id="user-staked">0</span> N <br>
-      You <span id="user-action"></span>: <span id="user-unstaked">0</span> N <span id="user-when"></span> <br>
-      <button id="withdraw-all" type="button" onclick="withdraw()" style="display:none"> Claim </button> <br>
-      <br>
-      <button type="button" onclick="stake(2)"> click me to stake 2 N </button> <br>
-      <button type="button" onclick="unstake(1)"> click me to unstake 1 N </button> <br>
-      <button type="button" onclick="update_prize()"> Update Prize </button>
-      <button type="button" onclick="raffle()"> Raffle </button>
-      </section>
-    </section>
-  </div>
+    </section><!-- End Counts Section -->
+  </main><!-- End #main -->
 
-  <script src="index.js"></script>
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong><span>Bootslander</span></strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/ -->
+        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i></a>
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/jquery/jquery.min.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/jquery.easing/jquery.easing.min.js"></script>
+  <script src="assets/vendor/waypoints/jquery.waypoints.min.js"></script>
+  <script src="assets/vendor/counterup/counterup.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/js/jquery.countdown.min.js"></script>
+
+  <!-- Template Main JS File -->
+  <!-- <script src="assets/js/contract.js" type="module" ></script> -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/index.js"></script>
+
 </body>
+
 </html>
