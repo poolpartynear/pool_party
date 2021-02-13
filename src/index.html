@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<body>
+<head>
+  <meta charset="utf-8">
+  <script src="http://code.jquery.com/jquery.js"></script>
+  <title>Testing contracts</title>
+</head>
+
+<body>
+  <div class="container" style="margin:30px; font-size:20px">
+
+    <section id="pool-info">
+      The pool has: <span id="pool-tickets"> _ </span> N <br>
+      The prize is: <span id="pool-prize"> _ </span> N <br>
+      And it can be raffle in the timestamp: <span id="prize-timestamp"> _</span><br>
+      The past winners are: <span id="winners"></span><br>
+    </section>
+    <br>
+    <section id='logged-out' style="display:none">
+      You are not logged in, please: 
+      <button type="button" onclick="login()"> Login </button>
+    </section>
+    <section id='logged-in' style="display:none">
+      Logged in as: <span id="account"> </span>
+      <button type="button" onclick="logout()"> Logout </button> <br>
+      
+      You staked: <span id="user-staked">0</span> N <br>
+      You <span id="user-action"></span>: <span id="user-unstaked">0</span> N <span id="user-when"></span> <br>
+      <button id="withdraw-all" type="button" onclick="withdraw()" style="display:none"> Claim </button> <br>
+      <br>
+      <button type="button" onclick="stake(2)"> click me to stake 2 N </button> <br>
+      <button type="button" onclick="unstake(1)"> click me to unstake 1 N </button> <br>
+      <button type="button" onclick="update_prize()"> Update Prize </button>
+      <button type="button" onclick="raffle()"> Raffle </button>
+      </section>
+    </section>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
