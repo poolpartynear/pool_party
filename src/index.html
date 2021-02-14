@@ -17,8 +17,7 @@
   <!-- <link href="assets/css/fonts.css" rel="stylesheet"> -->
   <!-- Vendor JS Files -->
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="./assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <!-- <script src="./assets/vendor/jquery.easing/jquery.easing.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
   <script src="./assets/vendor/waypoints/jquery.waypoints.min.js"></script>
   <script src="./assets/vendor/counterup/counterup.min.js"></script>
@@ -27,19 +26,12 @@
 
   <!-- Vendor CSS Files -->
 
-  <link href="./assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/vendor/fontawesome-free/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"/>
   <link href="./assets/vendor/aos/aos.css" rel="stylesheet">
 
   <!-- Template Main CSS File -->
   <link href="./assets/css/style.css" rel="stylesheet">
-
-  <!-- =======================================================
-  * Template Name: Bootslander - v3.0.0
-  * Template URL: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
 </head>
 
 <body>
@@ -48,11 +40,7 @@
   <header id="header" class="fixed-top d-flex align-items-center header-transparent">
     <div class="container d-flex align-items-center justify-content-between">
 
-      <div class="logo">
-        <!-- <h1><a href="index.html"><span>Pool Party</span></a></h1> -->
-        <!-- Uncomment below if you prefer to use an image logo -->
-        <!-- <a href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
-      </div>
+      <div class="logo"></div>
 
       <nav class="nav-menu d-none d-lg-block">
         <ul>
@@ -60,7 +48,8 @@
           <li><a href="#details">How does it work?</a></li>
           <li><a href="#counts">Join the party</a></li>
           <li id="login-btn" class="logged-out"><a onclick="login()" type="button" href="#">Login</a></li>
-          <li class="drop-down dropdown-header logged-in"><a href="#" id="account">gatinho.testnet <i class="fas fa-caret-down"></i></a>
+          <li class="drop-down dropdown-header logged-in">
+            <a href="#" id="account"><i class="fas fa-caret-down"></i></a>
             <ul>
               <li><a onclick="logout()" type="button">Logout</a></li>
             </ul>
@@ -79,10 +68,11 @@
         <div class="col-lg-6 pt-5 pt-lg-0 order-2 order-lg-1 d-flex align-items-center">
           <div data-aos="zoom-out">
             <h1>Jump in the <span>Pool</span></h1>
-            <h2>Make money by doing something I quite don't understand yet.</h2>
+            <h2>Join the pool, and win money by saving your money!</h2>
             
             <div class="text-center text-lg-start">
-              <a href="#counts" class="btn-get-started scrollto">Join the Party</a>
+              <a href="#counts" class="logged-in btn-get-started scrollto">Join the Party</a>
+              <a onclick="login()" href="#" class="logged-out btn-get-started scrollto">Login with NEAR</a>
             </div>
           </div>
         </div>
@@ -92,7 +82,9 @@
       </div>
     </div>
 
-    <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28 " preserveAspectRatio="none">
+    <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         viewBox="0 24 150 28 " preserveAspectRatio="none">
       <defs>
         <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z">
       </defs>
@@ -120,27 +112,36 @@
             <img src="assets/img/details-1.png" class="img-fluid" alt="">
           </div>
           <div class="col-md-8 pt-4" data-aos="fade-up">
-            <h3>Con dinopianito nunca perdes, con dinopianito siempre ganas.</h3>
+            <h3>Join the Pool Party, a no-loss money game!</h3>
             <p class="font-italic">
-              Pool party is a protocol for no-loss money games powered by NEAR.
+              Pool Party is a no-loss money games powered by the NEAR blockchain.
             </p>
             <ul>
-              <i class="fas fa-ticket-alt"></i> Buy tickets to enter the pool and participate in the raffle.</li>
-              <li><i class="fas fa-dice"></i> The more tickets you have, the more chances you have to win.</li>
-              <li><i class="fas fa-trophy"></i> Prizes are made up of the interest earned on all deposited money in the pool.</li>
-              <li><i class="fas fa-swimming-pool"></i> You can get out of the pool whenever you want and never lose anything.</li>
+              <li>
+                <i class="fas fa-ticket-alt"></i>
+                Buy tickets to enter the pool and participate in the raffle.
+             </li>
+             <li>
+               <i class="fas fa-trophy"></i>
+               Once per week we raffle all the interest earned on the deposited money.
+             </li>
+             <li>
+               <i class="fas fa-dice"></i>
+               The more tickets you have, the more chances you have to win.
+             </li>
+             <li>
+               <i class="fas fa-swimming-pool">
+               </i> You can get all your money out of the pool whenever you want.
+             </li>
             </ul>
-            <p>
-              What are you waiting for? Give us the money!
-            </p>
+            <p>Join the pool, and win money while you save your money!</p>
           </div>
         </div>
-
       </div>
     </section><!-- End Details Section -->
 
     <!-- ======= Counts Section ======= -->
-    <section id="counts" class="counts logged-in">
+    <section id="counts" class="counts">
       <div class="container">
 
         <div class="row justify-content-md-center" data-aos="fade-up">
@@ -149,7 +150,7 @@
             <div class="count-box">
               <i class="fas fa-ticket-alt"></i>
               <span data-toggle="counter-up" class="pool-tickets">0</span>
-              <p>Total Tickets</p>
+              <p>Tickets in the Pool</p>
               <span data-toggle="counter-up" class="user-staked">0</span>
               <p>Are Yours</p>
             </div>
@@ -159,9 +160,7 @@
             <div class="count-box">
               <i class="fas fa-trophy"></i>
               <span data-toggle="counter-up" class="pool-prize">0</span>
-              <p>Prize (NEAR) until now</p>
-              <span data-toggle="counter-up">0</span>
-              <p>Proyected at the end</p>
+              <p>Prize (NEAR) so far</p>
             </div>
           </div>
 
@@ -195,7 +194,7 @@
             <div class="count-box">
               <i class="fas fa-swimming-pool"></i>
               <span>Exchange <span data-toggle="counter-up" class="user-staked">0</span> Tickets</span>
-              <p>You can return your tickets and get out of the pool. Your refund in NEARS will be available in 3 days. You will not be eligible for the next raffle.</p>
+              <p> Your refund in NEARS will be available in 3 days. You will not be eligible for the next raffle.</p>
               <a type="button" class="btn-get-started scrollto" onclick="leave_pool()">Get out</a>
               <!-- <span data-toggle="counter-up">500</span> -->
               <!-- <p>Are Yours</p> -->
@@ -205,12 +204,11 @@
           <div class="col-lg-6 col-md-6 mt-5 mt-lg-0">
             <div class="count-box">
               <i class="fas fa-money-bill"></i>
-              <span>Exchange <span data-toggle="counter-up" class="user-unstaked">0</span> NEARS</span>
-              <p>You can withdraw the NEARs back to your account.</p>
-              <!-- <p>You can withdraw the NEARs back to your account, or exchange them for more tickets.</p> -->
-              <p id="balance-msg"></p>
-              <a type="button" class="btn-get-started scrollto btn-balance" onclick="withdraw()">Withdraw your NEARS</a>
-              <!-- <a type="button" class="btn-get-started scrollto btn-balance" onclick="exchange_balance()">Exchange them for tickets</a> -->
+              <span>Withdraw <span data-toggle="counter-up" class="user-unstaked">0</span> NEARS</span>
+              <p id="withdraw-msg">You didn't asked to withdraw any NEARS</p>
+              <p id="withdraw-countdown" style="display:none;">Your NEAR will be ready in <span id="withdraw-time-left"></span> </p>
+              <a type="button" id="withdraw_btn" class="btn-get-started scrollto"
+                 onclick="withdraw()" style="display:none;">Withdraw your NEARS</a>
             </div>
           </div>
 
@@ -231,8 +229,8 @@
 
       </div>
       
-    </section><!-- End Counts Section -->
-  </main><!-- End #main -->
+    </section>
+  </main>
 
   <!-- ======= Footer ======= -->
   <footer id="footer">
@@ -242,10 +240,6 @@
         &copy; Copyright <strong><span>Bootslander</span></strong>. All Rights Reserved
       </div>
       <div class="credits">
-        <!-- All the links in the footer should remain intact. -->
-        <!-- You can delete the links only if you purchased the pro version. -->
-        <!-- Licensing information: https://bootstrapmade.com/license/ -->
-        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/ -->
         Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
       </div>
     </div>
@@ -256,7 +250,6 @@
 
 
   <!-- Template Main JS File -->
-  <!-- <script src="assets/js/contract.js" type="module" ></script> -->
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/index.js"></script>
 

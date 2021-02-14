@@ -59,7 +59,7 @@ export async function get_account(account_id){
   let info = await contract.get_account({account_id})
   info.staked_balance = parseFloat(nearAPI.utils.format.formatNearAmount(info.staked_balance))
   info.unstaked_balance = parseFloat(nearAPI.utils.format.formatNearAmount(info.unstaked_balance))
-  info.available_when /= 1000000
+  info.available_when = (info.available_when/1000000).toFixed(0)
   return info 
 }
 
@@ -67,7 +67,7 @@ export async function get_pool_info(){
   let info = await contract.get_pool_info()
   info.total_staked = parseFloat(nearAPI.utils.format.formatNearAmount(info.total_staked))
   info.prize = parseFloat(nearAPI.utils.format.formatNearAmount(info.prize))
-  info.next_prize_tmstmp /= 1000000
+  info.next_prize_tmstmp = (info.next_prize_tmstmp/1000000).toFixed(0)
   return info  
 }
 
