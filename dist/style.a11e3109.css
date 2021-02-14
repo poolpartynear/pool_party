@@ -252,18 +252,18 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 14px;
   font-weight: 500;
   text-transform: none;
-  color: #01036f;
+  color: #52c8ea;
 }
 
 .nav-menu .drop-down ul a:hover, .nav-menu .drop-down ul .active > a, .nav-menu .drop-down ul li:hover > a {
   color: #f26f8d;
 }
 
-.nav-menu .drop-down > a:after {
+/*.nav-menu .drop-down > a:after {
   content: "\ea99";
   font-family: IcoFont;
   padding-left: 5px;
-}
+}*/
 
 .nav-menu .drop-down .drop-down ul {
   top: 0;
@@ -344,7 +344,7 @@ h1, h2, h3, h4, h5, h6 {
 .mobile-nav a {
   display: block;
   position: relative;
-  color: #01036f;
+  color: #52c8ea;
   padding: 10px 20px;
   font-weight: 500;
   outline: none;
@@ -912,7 +912,7 @@ section {
 }
 
 .features .icon-box h3 a:hover {
-  color: #01036f;
+  color: #52c8ea;
 }
 
 .features .icon-box:hover {
@@ -1157,7 +1157,7 @@ section {
   font-weight: 700;
   margin-bottom: 10px;
   font-size: 16px;
-  color: #01036f;
+  color: #52c8ea;
   position: relative;
   padding-bottom: 10px;
 }
@@ -1177,7 +1177,7 @@ section {
   font-style: italic;
   display: block;
   font-size: 13px;
-  color: #01036f;
+  color: #52c8ea;
 }
 
 .team .member .social {
@@ -1186,7 +1186,7 @@ section {
 
 .team .member .social a {
   transition: color 0.3s;
-  color: #01036f;
+  color: #52c8ea;
 }
 
 .team .member .social a:hover {

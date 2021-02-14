@@ -38,8 +38,6 @@
 
 !(function($) {
   "use strict";
-  $("#logout-btn").hide();
-  // $("#login-btn").hide();
   // Preloader
   $(window).on('load', function() {
     if ($('#preloader').length) {

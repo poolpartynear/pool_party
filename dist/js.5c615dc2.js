@@ -23223,13 +23223,14 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+// var pool,user;
 function display_pool_info() {
   return _display_pool_info.apply(this, arguments);
 }
 
 function _display_pool_info() {
   _display_pool_info = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-    var pool, winners;
+    var pool, winners, i;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -23240,18 +23241,26 @@ function _display_pool_info() {
           case 2:
             pool = _context.sent;
             console.log(pool);
-            $('#pool-tickets').text(pool.total_staked);
-            $('#pool-prize').text(pool.prize);
-            $('#prize-timestamp').text(pool.next_prize_tmstmp);
-            _context.next = 9;
+            $('.pool-tickets').html(pool.total_staked);
+            $('.pool-prize').html(pool.prize); // $('.prize-timestamp').text(pool.next_prize_tmstmp)
+
+            console.log("pool.next_prize_tmstmp");
+            console.log(pool.next_prize_tmstmp);
+            $("#time-left").countdown(pool.next_prize_tmstmp, function (event) {
+              $(this).text(event.strftime('%-D days %H:%M:%S'));
+            });
+            _context.next = 11;
             return (0, _blockchain.get_winners)();
 
-          case 9:
+          case 11:
             winners = _context.sent;
             console.log(winners);
-            $('#winners').text(winners);
 
-          case 12:
+            for (i = 0; i < winners.length; i++) {
+              $('#winners').append("<li>".concat(winners[i], "</li>"));
+            }
+
+          case 14:
           case "end":
             return _context.stop();
         }
@@ -23272,33 +23281,31 @@ function _login_flow() {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            $('#account').text(window.walletAccount.accountId);
+            $('#account').html(window.walletAccount.accountId + ' <i class="fas fa-caret-down"></i>');
             _context2.next = 3;
             return (0, _blockchain.get_account)(window.walletAccount.accountId);
 
           case 3:
             user = _context2.sent;
-            console.log(user);
-            $('#user-staked').text(user.staked_balance);
-            $('#user-unstaked').text(user.unstaked_balance);
+            $('.user-staked').html(user.staked_balance);
+            $('.user-unstaked').html(user.unstaked_balance);
 
-            if (user.available) {
-              $('#user-action').text("can claim");
-              $('#withdraw-all').show();
-            } else {
-              $('#user-action').text('are withdrawing');
-              $('#user-when').text("which will be available on the " + user.available_when);
-            } // we need the user to call "raffle" when the pool is ready to raffle
+            if (!user.available && user.unstaked_balance > 0) {
+              $('.btn-balance').addClass('disabled');
+              $('#balance-msg').html("Your balance will be ready to use next " + user.available_when);
+            }
+
+            window.user = user; // we need the user to call "raffle" when the pool is ready to raffle
             // the prize
-
 
             _context2.next = 10;
             return (0, _blockchain.get_pool_info)();
 
           case 10:
             pool = _context2.sent;
+            $('#user-odds').html(pool.total_staked / user.staked_balance); //if(pool.next_prize_tmstmp < Date.now()){raffle()}
 
-          case 11:
+          case 12:
           case "end":
             return _context2.stop();
         }
@@ -23312,9 +23319,11 @@ function flow() {
   display_pool_info();
 
   if (!window.walletAccount.accountId) {
-    $(".logged-out").show();
+    // $(".logged-out").show()
+    $(".logged-in").hide();
   } else {
-    $(".logged-in").show();
+    $(".logged-out").hide(); // $(".logged-in").show()
+
     login_flow();
   }
 }
@@ -23322,9 +23331,27 @@ function flow() {
 window.login = _blockchain.login;
 window.logout = _blockchain.logout;
 window.withdraw = _blockchain.withdraw;
-window.stake = _blockchain.stake; // NOTE: RETURNS TRUE IF IT SUCCEDED.. USE IT TO UPDATE THE INTERFACE
 
-window.unstake = _blockchain.unstake; // NOTE: RETURNS TRUE IF IT SUCCEDED.. USE IT TO UPDATE THE INTERFACE
+window.buy_tickets = function () {
+  var toStake = parseInt($("#how-much-input").val());
+
+  if (!isNaN(toStake)) {
+    (0, _blockchain.stake)(toStake);
+  }
+}; // window.exchange_balance = function (){
+//   const toStake = floor(user.unstaked_balance);
+//   stake(toStake);
+// window.location.reload();
+// }
+// NOTE: RETURNS TRUE IF IT SUCCEDED.. USE IT TO UPDATE THE INTERFACE
+
+
+window.leave_pool = function () {
+  console.log(window.user);
+  (0, _blockchain.unstake)(window.user.staked_balance);
+  window.location.reload();
+}; // NOTE: RETURNS TRUE IF IT SUCCEDED.. USE IT TO UPDATE THE INTERFACE
+
 
 window.update_prize = _blockchain.update_prize; // NOTE: RETURNS the IDX of who won.. we could use it to keep track on a server... eventually
 
@@ -23361,7 +23388,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41033" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "43203" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
