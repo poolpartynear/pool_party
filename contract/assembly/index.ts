@@ -8,7 +8,7 @@ import {user_to_idx, idx_to_user, user_tickets, accum_weights,
 const unstake_wait:u64 = 259200000000000
 const raffle_wait:u64 = 86400000000000
 const fees:u128 = u128.from(100)
-const POOL:string = "01node.pool.f863973.m0" //"test-account-1613037087253-4569549"
+const POOL:string = "blazenet.pool.f863973.m0" //"01node.pool.f863973.m0" //"test-account-1613037087253-4569549"
 const MIN_GAS:u64 = 300000000000000
 
 function check_internal():ContractPromiseResult{
