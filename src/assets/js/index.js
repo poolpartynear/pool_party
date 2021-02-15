@@ -6,7 +6,7 @@ async function display_pool_info(){
   let pool = await get_pool_info()
 
   $('.pool-tickets').html(pool.total_staked)
-  $('.pool-prize').html(pool.prize)
+  $('.pool-prize').html(pool.prize.toFixed(2))
 
   $("#time-left")
   .countdown(pool.next_prize_tmstmp, function(event) {
