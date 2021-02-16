@@ -69,9 +69,7 @@
           <div data-aos="zoom-out">
             <h1>Jump in the <span>Pool</span></h1>
             <h2>Join the pool, and win money by saving your money!</h2>
-            <h2 id="pool-stats" style="display: none">
-              You can win <span class="pool-prize">0</span> NEARs in <span class="time-left"></span>
-            </h2>
+            
             <div class="text-center text-lg-start">
               <a href="#counts" class="logged-in btn-get-started scrollto">Join the Party</a>
               <a onclick="login()" href="#" class="logged-out btn-get-started scrollto">Login with NEAR</a>
@@ -111,7 +109,7 @@
 
         <div class="row content">
           <div class="col-md-4" data-aos="fade-right">
-            <img src="assets/img/details.svg" class="img-fluid" alt="" style="border-radius: 25px">
+            <img src="assets/img/details-1.png" class="img-fluid" alt="">
           </div>
           <div class="col-md-8 pt-4" data-aos="fade-up">
             <h3>Join the Pool Party, a no-loss money game!</h3>
@@ -144,15 +142,15 @@
 
     <!-- ======= Counts Section ======= -->
     <section id="counts" class="counts">
-      <div class="container text-center">
+      <div class="container">
 
         <div class="row justify-content-md-center" data-aos="fade-up">
  
-          <h1 class="mb-5 text-white"> Pool Party Stats </h1>
+          <h1 class="text-center" style="padding:10px 0 50px; color:#52c8ea"> Pool Party Stats </h1>
           
           <div class="col-lg-3 col-md-6 mt-5 mt-md-0">
             <div class="count-box">
-              <i class="count-box-icon fas fa-ticket-alt"></i>
+              <i class="fas fa-ticket-alt"></i>
               <span data-toggle="counter-up" class="pool-tickets">0</span>
               <p>Tickets in the Pool</p>
               <span data-toggle="counter-up" class="user-staked logged-in">0</span>
@@ -162,7 +160,7 @@
 
           <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
             <div class="count-box">
-              <i class="count-box-icon fas fa-trophy"></i>
+              <i class="fas fa-trophy"></i>
               <span data-toggle="counter-up" class="pool-prize">0</span>
               <p>Prize (NEAR) so far</p>
             </div>
@@ -170,8 +168,8 @@
 
           <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
             <div class="count-box">
-              <i class="count-box-icon fas fa-hourglass-half"></i>
-              <span class="time-left" data-toggle="counter-up">0</span>
+              <i class="fas fa-hourglass-half"></i>
+              <span id="time-left">5</span>
               <p>Until next raffle</p>
             </div>
           </div>
@@ -179,46 +177,50 @@
         </div>
         <div class="row justify-content-md-center mt-5 logged-in" data-aos="fade-up">
  
-          <div class="col-lg-12 col-md-12 mt-5 mt-md-0">
+          <div class="col-lg-8 col-md-8 mt-5 mt-md-0">
             <div class="count-box text-center">
-              <i class="count-box-icon fas fa-dice"></i>
-              <ul class="user-data-list">
-                  <li>
-                    <i class="fas fa-ticket-alt"></i>
-                    You have <span class="user-staked">0</span> tickets
-                 </li>
-                 <li>
-                   <i class="fas fa-dice"></i>
-                    Your odds at winning are <span id="user-odds">0</span>
-                 </li>
-                 <li>
-                   <i class="fas fa-swimming-pool"></i> 
-                   <span id="withdraw-msg">You don't have any NEARs to withdraw</span>
-                   <span id="withdraw-countdown" style="display:none;">Your balance of <span class="user-unstaked">0</span> NEARs will be ready in <span id="withdraw-time-left"></span> </span>
-                 </li>
-                </ul>
-                <a type="button" class="btn-get-started scrollto " onclick="leave_pool()">Return Tickets</a>
-                <a type="button" id="withdraw_btn" class="btn-get-started scrollto"
-                 onclick="withdraw()" style="display:none;">Withdraw your NEARS</a>
-                <a type="button" class="btn-get-started scrollto" onclick="buy_tickets()">Buy Tickets</a>
-              <form class="form-inline justify-content-center mt-4" style="display: flex;">
-
-                <input type="number" class="form-control mr-sm-2 tickets-input w-75" placeholder="How many?" aria-label="ticket-amount" id="how-much-input" aria-describedby="basic-addon2">
-                
+              <i class="fas fa-dice"></i>
+              <span>Your odds at winning are <span data-toggle="counter-up" id="user-odds">0</span> Buy more tickets!</span>
+              <form class="form-inline justify-content-center mt-2">
+                <input type="number" class="form-control mr-sm-2 tickets-input" placeholder="How many?" aria-label="ticket-amount" id="how-much-input" aria-describedby="basic-addon2">
               </form>
-              <p style="font-style: italic;">1 Ticket == 1 NEAR</p><br>
-              
+              <p style="font-style: italic;">The more tickets you have, the more chances to win. 1 Ticket == 1 NEAR</p><br>
+              <a type="button" class="btn-get-started scrollto" onclick="buy_tickets()">Buy Tickets</a>
             </div>
           </div>
 
         </div>
+        <div class="row justify-content-md-center mt-5 logged-in" data-aos="fade-up">
+ 
+          <div class="col-lg-6 col-md-6 mt-5 mt-md-0">
+            <div class="count-box">
+              <i class="fas fa-swimming-pool"></i>
+              <span>Exchange <span data-toggle="counter-up" class="user-staked">0</span> Tickets</span>
+              <p> Your NEARs will be available in 3 days. You will not be eligible for the next raffle.</p>
+              <a type="button" class="btn-get-started scrollto " onclick="leave_pool()">Exchange all</a>
+              <!-- <span data-toggle="counter-up">500</span> -->
+              <!-- <p>Are Yours</p> -->
+            </div>
+          </div>
 
+          <div class="col-lg-6 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="fas fa-money-bill"></i>
+              <span>Withdraw <span data-toggle="counter-up" class="user-unstaked">0</span> NEARS</span>
+              <p id="withdraw-msg">You didn't asked to withdraw any NEARS</p>
+              <p id="withdraw-countdown" style="display:none;">Your NEAR will be ready in <span id="withdraw-time-left"></span> </p>
+              <a type="button" id="withdraw_btn" class="btn-get-started scrollto"
+                 onclick="withdraw()" style="display:none;">Withdraw your NEARS</a>
+            </div>
+          </div>
+
+        </div>
         <div class="row justify-content-md-center mt-5 " data-aos="fade-up">
  
           <div class="col-lg-8 col-md-8 mt-5 mt-md-0">
             <div class="count-box text-center">
-              <i class="count-box-icon fas fa-trophy"></i>
-              <span class="count-title" >Last Winners!</span>
+              <i class="fas fa-trophy"></i>
+              <span>Last Winners!</span>
               <ul id="winners">
               </ul>
             </div>

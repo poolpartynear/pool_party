@@ -1,4 +1,40 @@
+/**
+* Template Name: Bootslander - v3.0.0
+* Template URL: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/
+* Author: BootstrapMade.com
+* License: https://bootstrapmade.com/license/
 
+*/
+// window.user = null;
+
+// window.login = function login(){
+//   window.user="asdf";
+//   $("#login-btn").hide();
+//   $("#logout-btn").show();
+//   return {tickets: 500, money: 20};
+// }
+
+// window.logout = function logout(){
+//   $("#logout-btn").hide();
+//   $("#login-btn").show();
+  
+//   window.user = null;
+// }
+
+// function getPoolInfo(){
+//   return {
+//     totalTickets: 5000,
+//     totalUsers: 20,
+//     totalMoney: 5100,
+//     closingDate: new Date(new Date().getTime()+(5*24*60*60*1000)),
+//   }
+// }
+
+
+// function setPoolInfo(){
+//   const pool = getPoolInfo();
+  
+// }
 
 !(function($) {
   "use strict";
@@ -17,11 +53,6 @@
       event.strftime('%-D days %H:%M:%S')
     );
   });
-
-  $("#how-much-input").on('input', function() { 
-    $("#how-much-input").removeClass("is-invalid");
-  });
-
 
   // Smooth scroll for the navigation menu and links with .scrollto classes
   var scrolltoOffset = $('#header').outerHeight() - 21;

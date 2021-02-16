@@ -8,13 +8,12 @@ async function display_pool_info(){
   $('.pool-tickets').html(pool.total_staked)
   $('.pool-prize').html(pool.prize.toFixed(2))
 
-  $(".time-left")
+  $("#time-left")
   .countdown(pool.next_prize_tmstmp, function(event) {
     $(this).text(
       event.strftime('%-D days %H:%M:%S')
     );
   });
-  $("#pool-stats").show();
 
   let winners = await get_winners()
 
@@ -46,7 +45,7 @@ async function login_flow(){
   }
 
   if(user.available){
-    $('#withdraw-msg').html(`You have ${user.unstaked_balance} NEARs ready to withdraw.`);
+    $('#withdraw-msg').html("You can withdraw your NEAR!");
     $('#withdraw_btn').show()
   }
 
@@ -76,23 +75,16 @@ window.logout = logout
 window.withdraw = withdraw
 
 window.buy_tickets = function(){
-  const toStake = Math.round(($("#how-much-input").val() + Number.EPSILON) * 100) / 100;
-  if (!isNaN(toStake) && toStake>0){
+  const toStake = parseInt($("#how-much-input").val());
+  if (!isNaN(toStake)){
     stake(toStake);
-  } else {
-    $("#how-much-input").addClass('is-invalid');
   }
 }
 
 // NOTE: RETURNS TRUE IF IT SUCCEDED.. USE IT TO UPDATE THE INTERFACE
 window.leave_pool = async function(){
-  const toUnstake = $("#how-much-input").val();
-  if (!isNaN(toUnstake) && toUnstake<=window.user.staked_balance){
-    await unstake(toUnstake);
-    window.location.reload();
-  } else {
-    $("#how-much-input").addClass('is-invalid');
-  }
+  await unstake(window.user.staked_balance);
+  window.location.reload();
 }
 
 
