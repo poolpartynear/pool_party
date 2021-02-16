@@ -47,12 +47,6 @@
     }
   });
 
-  $("#time-left")
-  .countdown("2021/03/03", function(event) {
-    $(this).text(
-      event.strftime('%-D days %H:%M:%S')
-    );
-  });
 
   // Smooth scroll for the navigation menu and links with .scrollto classes
   var scrolltoOffset = $('#header').outerHeight() - 21;

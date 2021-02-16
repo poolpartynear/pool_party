@@ -33,7 +33,7 @@ export async function initNEAR() {
 
 export async function stake(amount){
   amount = nearAPI.utils.format.parseNearAmount(amount.toString())
-  account = window.walletConnection.account()
+  const account = window.walletConnection.account()
   account.functionCall(
     nearConfig.contractName, 'deposit_and_stake', {}, 300000000000000, amount
   )

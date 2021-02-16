@@ -42,11 +42,10 @@
 
       <div class="logo"></div>
 
-      <nav class="nav-menu d-none d-lg-block">
+      <nav class="nav-menu">
         <ul>
-          <li class="active"><a href="index.html">Home</a></li>
-          <li><a href="#details">How does it work?</a></li>
-          <li><a href="#counts">Join the party</a></li>
+          <li><a href="#details"> How it works</a></li>
+          <li><a href="#counts">Join</a></li>
           <li id="login-btn" class="logged-out"><a onclick="login()" type="button" href="#">Login</a></li>
           <li class="drop-down dropdown-header logged-in">
             <a href="#" id="account"><i class="fas fa-caret-down"></i></a>
@@ -108,8 +107,8 @@
       <div class="container">
 
         <div class="row content">
-          <div class="col-md-4" data-aos="fade-right">
-            <img src="assets/img/details-1.png" class="img-fluid" alt="">
+          <div class="col-md-4 text-center" data-aos="fade-right">
+            <img src="assets/img/jumping.png" class="img-fluid" alt="">
           </div>
           <div class="col-md-8 pt-4" data-aos="fade-up">
             <h3>Join the Pool Party, a no-loss money game!</h3>
@@ -148,17 +147,15 @@
  
           <h1 class="text-center" style="padding:10px 0 50px; color:#52c8ea"> Pool Party Stats </h1>
           
-          <div class="col-lg-3 col-md-6 mt-5 mt-md-0">
+          <div class="col-lg-4 col-md-4 mt-5 mt-md-0">
             <div class="count-box">
               <i class="fas fa-ticket-alt"></i>
               <span data-toggle="counter-up" class="pool-tickets">0</span>
               <p>Tickets in the Pool</p>
-              <span data-toggle="counter-up" class="user-staked logged-in">0</span>
-              <p class="logged-in">Are Yours</p>
             </div>
           </div>
 
-          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+          <div class="col-lg-4 col-md-4 mt-5 mt-lg-0">
             <div class="count-box">
               <i class="fas fa-trophy"></i>
               <span data-toggle="counter-up" class="pool-prize">0</span>
@@ -166,7 +163,7 @@
             </div>
           </div>
 
-          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+          <div class="col-lg-4 col-md-4 mt-5 mt-lg-0">
             <div class="count-box">
               <i class="fas fa-hourglass-half"></i>
               <span id="time-left">5</span>
@@ -177,10 +174,15 @@
         </div>
         <div class="row justify-content-md-center mt-5 logged-in" data-aos="fade-up">
  
-          <div class="col-lg-8 col-md-8 mt-5 mt-md-0">
+          <div class="col-lg-12 col-md-12 mt-5 mt-md-0">
             <div class="count-box text-center">
               <i class="fas fa-dice"></i>
-              <span>Your odds at winning are <span data-toggle="counter-up" id="user-odds">0</span> Buy more tickets!</span>
+              <span data-toggle="counter-up" class="user-staked logged-in">0</span>
+              <p class="logged-in">Tickets in the pool are yours</p>
+              <span data-toggle="counter-up" id="user-odds">0</span>
+              <p>Are your odds at winning </p>
+
+              <span> Buy more tickets!</span>
               <form class="form-inline justify-content-center mt-2">
                 <input type="number" class="form-control mr-sm-2 tickets-input" placeholder="How many?" aria-label="ticket-amount" id="how-much-input" aria-describedby="basic-addon2">
               </form>
@@ -192,7 +194,7 @@
         </div>
         <div class="row justify-content-md-center mt-5 logged-in" data-aos="fade-up">
  
-          <div class="col-lg-6 col-md-6 mt-5 mt-md-0">
+          <div class="col-lg-6 col-md-6 mt-5 mt-lg-0">
             <div class="count-box">
               <i class="fas fa-swimming-pool"></i>
               <span>Exchange <span data-toggle="counter-up" class="user-staked">0</span> Tickets</span>
@@ -217,7 +219,7 @@
         </div>
         <div class="row justify-content-md-center mt-5 " data-aos="fade-up">
  
-          <div class="col-lg-8 col-md-8 mt-5 mt-md-0">
+          <div class="col-lg-6 col-md-8 mt-5 mt-md-0">
             <div class="count-box text-center">
               <i class="fas fa-trophy"></i>
               <span>Last Winners!</span>
