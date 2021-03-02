@@ -5,9 +5,9 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
-    user_A = 'test-account-1612980979066-6437796'
-    user_B = 'test-account-1612997972642-4935732'
-    user_C = 'test-account-1612999521877-7982994'
+    user_A = 'test-account-1614519168704-9311104'
+    user_B = 'test-account-1614519219937-7846099'
+    user_C = 'test-account-1614519260845-4406393'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -16,10 +16,10 @@ describe('PoolParty', function () {
       return near.loadContract(nearConfig.contractName, {
         viewMethods: ['get_account'],
         changeMethods: ['get_pool_info', 'deposit_and_stake', 'unstake',
-                        'withdraw_all', 'prepare', 'init',
-                        'get_pool_tickets', 'get_user_tickets',
-                        'add_tickets_to_user_and_pool', '_deposit_and_stake',
-                        '_unstake', '_withdraw_all', '__withdraw_all'],
+                        'withdraw_all', 'update_prize', 'withdraw_external',
+                        'unstake_external', 'get_pool_tickets',
+                        'get_user_tickets', '_deposit_and_stake',
+                        '_unstake_external', '_withdraw_external', '_withdraw_all'],
         sender: user
       })
     }
@@ -51,6 +51,22 @@ describe('PoolParty', function () {
       return nearlib.providers.getTransactionLastResult(result)
     }
 
+    unstake_external = async function(contract){
+      let result = await contract.account.functionCall(
+        nearConfig.contractName, 'unstake_external', {}, 300000000000000, 0
+      )
+
+      return nearlib.providers.getTransactionLastResult(result)
+    }
+
+    withdraw_external = async function(contract){
+      let result = await contract.account.functionCall(
+        nearConfig.contractName, 'withdraw_external', {}, 300000000000000, 0
+      )
+
+      return nearlib.providers.getTransactionLastResult(result)
+    }
+
     withdraw_all = async function(contract){
       let result = await contract.account.functionCall(
         nearConfig.contractName, 'withdraw_all', {}, 300000000000000, 0
@@ -63,7 +79,8 @@ describe('PoolParty', function () {
       let info = await contract.get_account({account_id})
       info.staked_balance = parseFloat(nearlib.utils.format.formatNearAmount(info.staked_balance))
       info.unstaked_balance = parseFloat(nearlib.utils.format.formatNearAmount(info.unstaked_balance))
-      return info 
+      info.available_when = Number(info.available_when)
+      return info
     }
 
     get_pool_info = async function(contract){
@@ -76,14 +93,6 @@ describe('PoolParty', function () {
       return info  
     }
 
-    prepare = async function(contract=contract_A){
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'prepare', {}, 300000000000000, 0
-      )
-      info = nearlib.providers.getTransactionLastResult(result)
-      return info  
-    }
-
     raffle = async function(contract=contract_A){
       let result = await contract.account.functionCall(
         nearConfig.contractName, 'raffle', {}, 300000000000000, 0
@@ -92,7 +101,13 @@ describe('PoolParty', function () {
       return info  
     }
 
-    await contract_A.init()
+    update_prize = async function(contract=contract_A){
+      let result = await contract.account.functionCall(
+        nearConfig.contractName, 'update_prize', {}, 300000000000000, 0
+      )
+      info = nearlib.providers.getTransactionLastResult(result)
+      return info  
+    }
   });
 
   describe('Pool', function () {
@@ -148,6 +163,9 @@ describe('PoolParty', function () {
       let pool = 'mypool'
       if(pool == 'mypool'){
         // We are using my pool, which doubles the money you deposit
+       
+        console.log("update_prize")
+        await update_prize()
         let pool_info = await get_pool_info(contract_A)
         expect(pool_info.prize).toBe(15)
       }
@@ -178,7 +196,8 @@ describe('PoolParty', function () {
     })
 
     it("correctly unstacks money", async function(){
-      let response = await unstake(1, contract_A)
+      await unstake(1, contract_A)
+      await unstake(1.123, contract_B)
 
       // only A should have changed
       user_A_info = await get_account(user_A)
@@ -187,9 +206,9 @@ describe('PoolParty', function () {
       pool_info = await get_pool_info(contract_A)
 
       const infos = [user_A_info, user_B_info, user_C_info]
-      const tickets = [9, 12.123, 0.123456]
-      const unstaked_balance = [1, 0, 0]
-      const available = [true, false, false]
+      const tickets = [9, 11, 0.123456]
+      const unstaked_balance = [1, 1.123, 0]
+      const available = [false, false, false]
 
       for(i=0; i<3; i++){
         expect(infos[i].staked_balance).toBe(tickets[i])
@@ -197,12 +216,14 @@ describe('PoolParty', function () {
         expect(infos[i].available).toBe(available[i])
       }
 
-      expect(pool_info.total_staked).toBe(9+12.123+0.123456)
+      expect(pool_info.total_staked).toBe(10+12.123+0.123456)
     })
 
-    it("has the right prize again", async function(){
+    it("if no one called unstake_external, the prize doesn't change", async function(){
       let pool = 'mypool'
       if(pool == 'mypool'){
+        await update_prize()
+
         // We are using my pool, which doubles the money you deposit
         let pool_info = await get_pool_info(contract_A)
 
@@ -210,63 +231,51 @@ describe('PoolParty', function () {
       }
     })
 
+    it("ERORR: cannot withdraw since nobody unstaked", async function(){
+      await withdraw_external(contract_B)
+    })
+
+
+    it("on external unstake, the prize and pool tickets is updated", async function(){
+      let pool = 'mypool'
+      if(pool == 'mypool'){
+        let result = await unstake_external(contract_C)
+        expect(result).toBe(true)
+
+        await update_prize()
+
+        // We are using my pool, which doubles the money you deposit
+        let pool_info = await get_pool_info(contract_A)
+
+        expect(pool_info.total_staked).toBe(9+11+0.123456)
+        expect(pool_info.prize).toBe(10+12.123+0.123456)
+      }
+    })
+
+    it("can claim money unstacked in 2 turns", async function(){
+      account = await get_account(user_A)
+      expect(account.staked_balance).toBe(9)
+      expect(account.unstaked_balance).toBe(1)
+      expect(account.available_when).toBe(2)
+    })
+
     it("ERROR: cannot unstack more money than available", async function(){
       await unstake(1, contract_C)
     })
 
-    it("can claim money unstacked", async function(){
-      balance = await get_account_balance(user_A)
-      await withdraw_all(contract_A)
-    
-      new_balance = await get_account_balance(user_A)
-
-      expect(new_balance.total - balance.total > 0.9).toBe(true)
-    })
-
-    it("can handle multiple users", async function(){
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-      await prepare()
-
-      let house_tickets = await contracts.get_user_tickets({idx:0})
-
-      let winner = await raffle() 
-      console.log(winner)
-
-      let new_house_tickets = await contracts.get_user_tickets({idx:0})
-
-      console.log(house_tickets, new_house_tickets)
-    })
-
-    it("ERROR: cannot access method add_tickets_to_user_and_pool", async ()=>{
-      await contract_A.add_tickets_to_user_and_pool({idx:0, amount:'1'})  
-    })
     it("ERROR: cannot access method _deposit_and_stake", async ()=>{
       await contract_A._deposit_and_stake({amount:'1'})  
     })
-    it("ERROR: cannot access method _unstake", async ()=>{
-      await contract_A._unstake({idx:0, amount:'1'})  
+
+    it("ERROR: cannot access method _unstake_external", async ()=>{
+      await contract_A._unstake_external()  
     })
-    it("ERROR: cannot access method _unstake", async ()=>{
-      await contract_A._unstake({idx:0, amount:'1'})  
+    it("ERROR: cannot access method _withdraw_exteral", async ()=>{
+      await contract_A._withdraw_external()  
     })
     it("ERROR: cannot access method _withdraw_all", async ()=>{
       await contract_A._withdraw_all({idx:0, amount:'1'})  
     })
-    it("ERROR: cannot access method __withdraw_all", async ()=>{
-      await contract_A.__withdraw_all({idx:0, amount:'1'})  
-    })
+
   });
 });

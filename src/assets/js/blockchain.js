@@ -4,6 +4,11 @@ let getConfig = require('./config')
 
 const nearConfig = getConfig('testnet')
 
+export function floor(value, decimals=2) {
+  value = parseFloat(value)
+  return Number(Math.floor(value+'e'+decimals)+'e-'+decimals);
+}
+
 export function login() {
   walletConnection.requestSignIn(nearConfig.contractName, 'Pool Party');
 }
@@ -40,10 +45,19 @@ export async function stake(amount){
 }
 
 export async function unstake(amount){
+  amount = floor(amount)
   amount = nearAPI.utils.format.parseNearAmount(amount.toString())
   let result = await contract.account.functionCall(
     nearConfig.contractName, 'unstake', {amount:amount}, 300000000000000, 0
   )
+  return nearAPI.providers.getTransactionLastResult(result)
+}
+
+export async function unstake_external(){
+  let result = await contract.account.functionCall(
+    nearConfig.contractName, 'unstake_external', {}, 300000000000000, 0
+  )
+
   return nearAPI.providers.getTransactionLastResult(result)
 }
 
@@ -55,24 +69,35 @@ export async function withdraw(){
   return nearAPI.providers.getTransactionLastResult(result)
 }
 
+export async function withdraw_external(){
+  let result = await contract.account.functionCall(
+    nearConfig.contractName, 'withdraw_external', {}, 300000000000000, 0
+  )
+
+  return nearAPI.providers.getTransactionLastResult(result)
+}
+
 export async function get_account(account_id){
   let info = await contract.get_account({account_id})
-  info.staked_balance = parseFloat(nearAPI.utils.format.formatNearAmount(info.staked_balance))
-  info.unstaked_balance = parseFloat(nearAPI.utils.format.formatNearAmount(info.unstaked_balance))
-  info.available_when = (info.available_when/1000000).toFixed(0)
+
+  info.staked_balance = floor(nearAPI.utils.format.formatNearAmount(info.staked_balance))
+  info.unstaked_balance = floor(nearAPI.utils.format.formatNearAmount(info.unstaked_balance))
+  info.available_when = Number(info.available_when)
+
   return info 
 }
 
 export async function get_pool_info(){
   let info = await contract.get_pool_info()
-  info.total_staked = parseFloat(nearAPI.utils.format.formatNearAmount(info.total_staked))
-  info.prize = parseFloat(nearAPI.utils.format.formatNearAmount(info.prize))
+  info.total_staked = floor(nearAPI.utils.format.formatNearAmount(info.total_staked))
+  info.prize = floor(nearAPI.utils.format.formatNearAmount(info.prize))
   info.next_prize_tmstmp = (info.next_prize_tmstmp/1000000).toFixed(0)
   return info  
 }
 
 export async function get_winners(){
   let info = await contract.get_winners()
+  info.amount = floor(nearAPI.utils.format.formatNearAmount(info.amount))
   return info 
 }
 
