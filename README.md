@@ -1,12 +1,6 @@
 Pool Party
 ==================
 
-This app was initialized with [create-near-app]
-
-
-Quick Start
-===========
-
 To run this project locally:
 
 1. Prerequisites: Make sure you've installed [Node.js] ≥ 12
