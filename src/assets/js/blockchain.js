@@ -97,7 +97,10 @@ export async function get_pool_info(){
 
 export async function get_winners(){
   let info = await contract.get_winners()
-  info.amount = floor(nearAPI.utils.format.formatNearAmount(info.amount))
+  console.log(info)
+  for(let i=0; i<info.length;i++){
+    info[i].amount = floor(nearAPI.utils.format.formatNearAmount(info[i].amount))
+  }
   return info 
 }
 
