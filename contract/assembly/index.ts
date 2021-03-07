@@ -16,6 +16,7 @@ function check_internal():ContractPromiseResult{
   assert(context.predecessor == context.contractName, "Just don't")
 
   let results = ContractPromise.getResults() // Verify previous action succeed
+
   assert(results[0].status == 1, "Interaction with Pool failed, please try again later")
   return results[0]
 }
@@ -244,7 +245,7 @@ export function withdraw_all():void{
   assert(amount > u128.Zero, "Nothing to unstake")
 
   let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
-  assert(withdraw_turn > user_withdraw_turn[idx], "Withdraw not ready")
+  assert(withdraw_turn >= user_withdraw_turn[idx], "Withdraw not ready")
 
   let iargs:IntArgs = new IntArgs(idx, amount) 
   ContractPromiseBatch.create(context.sender)
@@ -272,14 +273,12 @@ export function withdraw_external():void{
   let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
   assert(unstake_turn == withdraw_turn, "Please unstake_external first")
 
-
   // withdraw money from external pool
   let promise = ContractPromise.create(POOL, "withdraw_all", "",
                                       120000000000000, u128.Zero)
-  //                                  300000000000000
+
   let callbackPromise = promise.then(context.contractName, "_withdraw_external",
                                      "", 120000000000000)
-  //                                     300000000000000
   callbackPromise.returnAsResult()
 }
 
@@ -300,16 +299,29 @@ export function unstake_external():void{
   let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
   assert(unstake_turn < withdraw_turn, "Please withdraw_external first")
 
-  let args:AmountArg = new AmountArg(get_to_unstake() - u128.from(10))
-  let promise = ContractPromise.create(POOL, "unstake", args.encode(),
-                                       120000000000000, u128.Zero)
-  //                                   300000000000000
+  let to_unstake:u128 = get_to_unstake()
 
-  let callbackPromise = promise.then(context.contractName, "_unstake_external",
-                                     "", 120000000000000)
-  //                                     300000000000000
-  callbackPromise.returnAsResult();
+  if(to_unstake <= u128.from(10)){
+    // There are no tickets to unstake
+    let promise = ContractPromise.create(context.contractName, "null",
+                                         "", 10000000000000, u128.Zero)
+    let callback = promise.then(context.contractName, "_unstake_external",
+                                "", 120000000000000)
+    callback.returnAsResult();
+  }else{
+    // There are tickets to unstake  
+    let args:AmountArg = new AmountArg(to_unstake - u128.from(10))
+    let promise = ContractPromise.create(POOL, "unstake", args.encode(),
+                                         120000000000000, u128.Zero)
+
+    let callbackPromise = promise.then(context.contractName, "_unstake_external",
+                                       "", 120000000000000)
+
+    callbackPromise.returnAsResult();
+  }
 }
+
+export function null():void{}
 
 export function _unstake_external():bool{
   check_internal()
@@ -327,6 +339,10 @@ export function _unstake_external():bool{
   // reset to_unstake
   storage.set<u128>('to_unstake', u128.Zero)
   return true
+}
+
+function __unstake_external():bool{
+
 }
 
 
