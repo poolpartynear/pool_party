@@ -116,11 +116,11 @@ window.withdraw_external = withdraw_external
 
 window.withdraw = async function(){
     $('.user-unstaked').html('<span class="fas fa-sync fa-spin"></span>')
-    const result = await withdraw()
-
-    if(result){
+    
+    try{
+      await withdraw() // throws error on fail, nothing on success
       get_and_display_user_info() 
-    }else{
+    }catch{
       $('.user-unstaked').html('try again later')
     }
 }
