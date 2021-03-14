@@ -3,9 +3,10 @@ import {initNEAR, login, logout, get_pool_info, get_account,
         get_winners, floor, unstake_external, withdraw_external} from './blockchain'
 
 async function get_and_display_pool_info(){
-  // reset ui
+  console.log("Getting information from the pool - VIEW")
+
   window.pool = await get_pool_info()
-  console.log(pool)
+
   $('.pool-tickets').html(pool.total_staked)
   $('.pool-prize').html(pool.prize)
 
@@ -16,6 +17,7 @@ async function get_and_display_pool_info(){
     );
   });
 
+  console.log("Getting winners - VIEW")  
   let winners = await get_winners()
 
   $('#winners').html('')
@@ -28,13 +30,18 @@ async function login_flow(){
   $('#account').html(window.walletAccount.accountId+' <i class="fas fa-caret-down"></i>')
 
   if(pool.next_prize_tmstmp < Date.now() && pool.total_staked>0){
+    console.log("Asking pool to make the raffle")
     await raffle()
   }else{
+    console.log("Asking pool to update prize")
     await update_prize()
   }
 
   if(pool.withdraw_ready){
+    console.log("Asking pool to withdraw from the external pool")
     await withdraw_external()
+
+    console.log("Asking pool to unstake from the external pool")
     await unstake_external()
   }
 
@@ -53,6 +60,7 @@ async function get_and_display_user_info(){
   $('#withdraw-msg').show()
   $('#withdraw-countdown').hide()
 
+  console.log("Getting user information - VIEW")
   window.user = await get_account(window.walletAccount.accountId)
   $('.user-staked').html(user.staked_balance)
   $('.user-unstaked').html(user.unstaked_balance)
@@ -70,7 +78,7 @@ async function get_and_display_user_info(){
     $('#withdraw-msg').hide()
     $('#withdraw-countdown').show()
 
-    $("#withdraw-time-left").html(user.available_when)
+    $("#withdraw-time-left").html(user.available_when*3 + " Days")
   }
 
   if(user.available){
@@ -115,14 +123,16 @@ window.unstake_external = unstake_external
 window.withdraw_external = withdraw_external
 
 window.withdraw = async function(){
-    $('.user-unstaked').html('<span class="fas fa-sync fa-spin"></span>')
-    
-    try{
-      await withdraw() // throws error on fail, nothing on success
-      get_and_display_user_info() 
-    }catch{
-      $('.user-unstaked').html('try again later')
-    }
+  console.log("Withdrawing all from user")
+
+  $('.user-unstaked').html('<span class="fas fa-sync fa-spin"></span>')
+
+  try{
+    await withdraw() // throws error on fail, nothing on success
+    get_and_display_user_info() 
+  }catch{
+    $('.user-unstaked').html('try again later')
+  }
 }
 
 window.onload = function(){
