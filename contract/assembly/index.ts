@@ -273,13 +273,24 @@ export function withdraw_external():void{
   let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
   assert(unstake_turn == withdraw_turn, "Please unstake_external first")
 
-  // withdraw money from external pool
-  let promise = ContractPromise.create(POOL, "withdraw_all", "",
-                                      120000000000000, u128.Zero)
+  let skip:bool = storage.getPrimitive<bool>('skip_next_withdraw', false)
 
-  let callbackPromise = promise.then(context.contractName, "_withdraw_external",
-                                     "", 120000000000000)
-  callbackPromise.returnAsResult()
+  if(skip){
+    // Nobody asked to unstake in the previous turn, therefore, there is
+    // nothing to withdraw form the external pool
+    let promise = ContractPromise.create(context.contractName, "null",
+                                         "", 10000000000000, u128.Zero)
+    let callback = promise.then(context.contractName, "_withdraw_external",
+                                "", 120000000000000)
+    callback.returnAsResult();
+  }else{
+    // withdraw money from external pool
+    let promise = ContractPromise.create(POOL, "withdraw_all", "",
+                                         120000000000000, u128.Zero)
+    let callbackPromise = promise.then(context.contractName, "_withdraw_external",
+                                       "", 120000000000000)
+    callbackPromise.returnAsResult()
+  }
 }
 
 export function _withdraw_external():bool{
@@ -302,7 +313,13 @@ export function unstake_external():void{
   let to_unstake:u128 = get_to_unstake()
 
   if(to_unstake <= u128.from(10)){
-    // There are no tickets to unstake
+    // Nobody asked to unstake their tickets
+
+    // Skip next call to withdraw_all in the external pool
+    storage.set<bool>('skip_next_withdraw', true)
+
+    // Call the null function, to set the call return to true, and call
+    // _unstake_external
     let promise = ContractPromise.create(context.contractName, "null",
                                          "", 10000000000000, u128.Zero)
     let callback = promise.then(context.contractName, "_unstake_external",
@@ -310,6 +327,8 @@ export function unstake_external():void{
     callback.returnAsResult();
   }else{
     // There are tickets to unstake  
+    storage.set<bool>('skip_next_withdraw', false)
+
     let args:AmountArg = new AmountArg(to_unstake - u128.from(10))
     let promise = ContractPromise.create(POOL, "unstake", args.encode(),
                                          120000000000000, u128.Zero)
