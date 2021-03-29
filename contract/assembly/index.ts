@@ -22,8 +22,9 @@ const UNSTAKE_EPOCH:u64 = 4
 // The external pool stakes around 100yn less than what the user stakes
 const STAKE_PRICE:u128 = u128.from(100)
 
-// We want the user to stake a minimum of 0.001 Nears + stake_price
-const MINIMUM_DEPOSIT:u128 = u128.from(1000000000000000000000) + STAKE_PRICE
+// We want the user to stake a minimum of 0.01 Nears + stake_price
+const MINIMUM_DEPOSIT:u128 = u128.from("1000000000000000000000") + STAKE_PRICE
+const MINIMUM_UNSTAKE:u128 = u128.from("1000000000000000000000")
 
 // The external pool
 const POOL:string = "blazenet.pool.f863973.m0" //"test-account-1614519462149-6021662"
@@ -169,7 +170,7 @@ export function deposit_and_stake():void{
 
   let amount: u128 = context.attachedDeposit
 
-  assert(amount > MINIMUM_DEPOSIT, "Please deposit at least " + MINIMUM_DEPOSIT.toString() + "N")
+  assert(amount >= MINIMUM_DEPOSIT, "Please deposit at least 0.01 N + 100yN")
 
   let promise:ContractPromise = ContractPromise.create(
       POOL, "deposit_and_stake", "{}", 100000000000000, amount
@@ -214,6 +215,8 @@ export function unstake(amount:u128):bool{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
   assert(user_to_idx.contains(context.sender), "User dont exist")
+
+  assert(amount >= MINIMUM_UNSTAKE, "Please unstake at least 0.01 N")
 
   // Get user info
   let idx:i32 = user_to_idx.getSome(context.sender)
