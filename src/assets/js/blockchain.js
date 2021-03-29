@@ -4,9 +4,11 @@ let getConfig = require('./config')
 
 const nearConfig = getConfig('testnet')
 
-export function floor(value, decimals=2) {
+export function floor(value, decimals=2){
   value = parseFloat(value)
-  return Number(Math.floor(value+'e'+decimals)+'e-'+decimals);
+  let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
+  if(isNaN(number)){number = 0}
+  return number
 }
 
 export function login() {
@@ -36,8 +38,14 @@ export async function initNEAR() {
   );
 }
 
-export async function stake(amount){
-  amount = nearAPI.utils.format.parseNearAmount(amount.toString())
+export async function stake(_amount){
+  let amount = nearAPI.utils.format.parseNearAmount(_amount.toString())
+
+  // Add 100yn, which the external pool "charges"
+  amount = amount.substr(0, amount.length - 3) + "100"
+
+  console.log("Staking " + amount + " NEAR")
+
   const account = window.walletConnection.account()
   account.functionCall(
     nearConfig.contractName, 'deposit_and_stake', {}, 300000000000000, amount

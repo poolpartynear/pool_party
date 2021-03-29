@@ -6,11 +6,28 @@ import {user_to_idx, idx_to_user, user_tickets, accum_weights,
 
 // Definitions ----------------------------------------------------------------
 // ----------------------------------------------------------------------------
+
+// The raffle happens once per day
 const raffle_wait:u64 = 86400000000000
+
+// We take a 10% of fees
 const fees:u128 = u128.from(100)
-const POOL:string = "blazenet.pool.f863973.m0" //"test-account-1614519462149-6021662"
+
+// The minimum gas needed to call each function
 const MIN_GAS:u64 = 300000000000000
+
+// Amount of epochs to wait before unstaking again
 const UNSTAKE_EPOCH:u64 = 4
+
+// The external pool stakes around 100yn less than what the user stakes
+const STAKE_PRICE:u128 = u128.from(100)
+
+// We want the user to stake a minimum of 0.001 Nears + stake_price
+const MINIMUM_DEPOSIT:u128 = u128.from(1000000000000000000000) + STAKE_PRICE
+
+// The external pool
+const POOL:string = "blazenet.pool.f863973.m0" //"test-account-1614519462149-6021662"
+
 
 function check_internal():ContractPromiseResult{
   assert(context.predecessor == context.contractName, "Just don't")
@@ -152,6 +169,8 @@ export function deposit_and_stake():void{
 
   let amount: u128 = context.attachedDeposit
 
+  assert(amount > MINIMUM_DEPOSIT, "Please deposit at least " + MINIMUM_DEPOSIT.toString() + "N")
+
   let promise:ContractPromise = ContractPromise.create(
       POOL, "deposit_and_stake", "{}", 100000000000000, amount
   )
@@ -184,7 +203,7 @@ export function _deposit_and_stake(amount:u128):bool{
   }
   
   // Update binary tree and pool
-  stake_tickets_for(idx, amount)
+  stake_tickets_for(idx, amount - STAKE_PRICE)
 
   return true
 }
@@ -303,6 +322,7 @@ export function _withdraw_external():bool{
   return true
 }
 
+
 export function unstake_external():void{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
@@ -312,7 +332,7 @@ export function unstake_external():void{
 
   let to_unstake:u128 = get_to_unstake()
 
-  if(to_unstake <= u128.from(10)){
+  if(to_unstake <= u128.Zero){
     // Nobody asked to unstake their tickets
 
     // Skip next call to withdraw_all in the external pool
@@ -329,7 +349,7 @@ export function unstake_external():void{
     // There are tickets to unstake  
     storage.set<bool>('skip_next_withdraw', false)
 
-    let args:AmountArg = new AmountArg(to_unstake - u128.from(10))
+    let args:AmountArg = new AmountArg(to_unstake)
     let promise = ContractPromise.create(POOL, "unstake", args.encode(),
                                          120000000000000, u128.Zero)
 
