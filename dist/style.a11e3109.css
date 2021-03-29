@@ -415,7 +415,7 @@ ul{
 --------------------------------------------------------------*/
 #hero {
   width: 100%;
-  background: url("../img/hero-bg.jpg");
+  background: url("/hero-bg.27531da2.jpg");
   position: relative;
   padding: 120px 0 0 0;
 }
@@ -802,7 +802,7 @@ section {
 }
 
 .about .video-box {
-  background: url("../img/about.png") center center no-repeat;
+  background: url("/about.aea21842.png") center center no-repeat;
   background-size: contain;
   min-height: 300px;
 }
@@ -1038,7 +1038,7 @@ section {
 --------------------------------------------------------------*/
 .testimonials {
   padding: 80px 0;
-  background: url("../img/cta-bg.jpg") no-repeat;
+  background: url("/cta-bg.c585d735.jpg") no-repeat;
   background-position: center center;
   background-size: cover;
   position: relative;
@@ -1715,3 +1715,6 @@ section {
     margin: -20px 0 30px 0;
   }
 }
+
+
+/*# sourceMappingURL=/style.a11e3109.css.map */

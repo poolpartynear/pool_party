@@ -99,21 +99,23 @@ async function flow(){
 }
 
 window.buy_tickets = function(){
-  $('#buy-btn').html('<span class="fas fa-sync fa-spin text-white"></span>')
   const toStake = floor($("#how-much-input").val());
   if (!isNaN(toStake)){
+    $('#buy-btn').html('<span class="fas fa-sync fa-spin text-white"></span>')
     stake(toStake);
   }
 }
 
 window.leave_pool = async function(){
   if(window.user.staked_balance > 0){
-    $('.user-staked').html('<span class="fas fa-sync fa-spin"></span>')
-    const result = await unstake(window.user.staked_balance);
-
-    if(result){
-      get_and_display_user_info()
-      get_and_display_pool_info()
+    const amount = floor($("#exchange-input").val());
+    if (!isNaN(amount)){
+      $('.user-staked').html('<span class="fas fa-sync fa-spin"></span>')
+      const result = await unstake(amount);
+      if(result){
+        get_and_display_user_info()
+        get_and_display_pool_info()
+      }
     }
   }
 }
