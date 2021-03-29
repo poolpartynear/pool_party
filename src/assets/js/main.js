@@ -3,38 +3,7 @@
 * Template URL: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/
 * Author: BootstrapMade.com
 * License: https://bootstrapmade.com/license/
-
-*/
-// window.user = null;
-
-// window.login = function login(){
-//   window.user="asdf";
-//   $("#login-btn").hide();
-//   $("#logout-btn").show();
-//   return {tickets: 500, money: 20};
-// }
-
-// window.logout = function logout(){
-//   $("#logout-btn").hide();
-//   $("#login-btn").show();
-  
-//   window.user = null;
-// }
-
-// function getPoolInfo(){
-//   return {
-//     totalTickets: 5000,
-//     totalUsers: 20,
-//     totalMoney: 5100,
-//     closingDate: new Date(new Date().getTime()+(5*24*60*60*1000)),
-//   }
-// }
-
-
-// function setPoolInfo(){
-//   const pool = getPoolInfo();
-  
-// }
+**/
 
 !(function($) {
   "use strict";
@@ -46,7 +15,6 @@
       });
     }
   });
-
 
   // Smooth scroll for the navigation menu and links with .scrollto classes
   var scrolltoOffset = $('#header').outerHeight() - 21;
@@ -181,31 +149,12 @@
     return false;
   });
 
-  // // Initiate the venobox plugin
-  // $(window).on('load', function() {
-  //   $('.venobox').venobox();
-  // });
-  // // Initiate venobox lightbox
-  // $(document).ready(function() {
-  //   $('.venobox').venobox();
-  // });
-
   // jQuery counterUp
   $('[data-toggle="counter-up"]').counterUp({
     delay: 10,
     time: 1000
   });
-
   
-
-  // // Testimonials carousel (uses the Owl Carousel library)
-  // $(".testimonials-carousel").owlCarousel({
-  //   autoplay: true,
-  //   dots: true,
-  //   loop: true,
-  //   items: 1
-  // });
-
   // Init AOS
   function aos_init() {
     AOS.init({
