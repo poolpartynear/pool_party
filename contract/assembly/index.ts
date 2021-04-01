@@ -60,7 +60,9 @@ export function get_pool_prize():u128{
 }
 
 export function get_pool_tickets():u128{
-  if(storage.contains('pool_tickets')){return storage.getSome<u128>('pool_tickets')}
+  if(storage.contains('pool_tickets')){
+    return storage.getSome<u128>('pool_tickets') - get_to_unstake()
+  }
   return u128.Zero
 }
 
@@ -81,7 +83,7 @@ export function get_winners():Array<Winner>{
   let size:i32 = winners.length
   
   let lower:i32 = 0
-  if(size >= 10){ let lower:i32 = size - 10 }
+  if(size >= 10){ lower = size - 10 }
 
   let to_return:Array<Winner> = new Array<Winner>()
   for(let i:i32=lower; i < size; i++){to_return.push(winners[i])}
@@ -159,7 +161,6 @@ export function get_account(account_id: string): User{
 
 // Deposit and stake ----------------------------------------------------------
 // ----------------------------------------------------------------------------
-
 @nearBindgen
 class AmountArg{
   constructor(public amount:u128){}
