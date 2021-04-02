@@ -26,6 +26,28 @@ const MINIMUM_UNSTAKE:u128 = u128.from("1000000000000000000000")
 // The external pool
 const POOL:string = "blazenet.pool.f863973.m0"
 
+// The first guardian
+const GUARDIAN = 'pooltest.testnet'
+
+// Guardian of the Reserve ----------------------------------------------------
+// ----------------------------------------------------------------------------
+export function get_guardian():string{
+  return storage.getPrimitive<string>('reserve_guardian', GUARDIAN)
+}
+
+export function change_guardian(new_guardian:string):void{
+  const guardian:string = get_guardian()
+
+  assert(context.sender == guardian, "Only the guardian can call me")
+
+  // Delete the current_guardian key
+  user_to_idx.delete(guardian)
+
+  // Set the new guardian
+  storage.set<string>('reserve_guardian', new_guardian)
+  user_to_idx.set(new_guardian, 0)
+  idx_to_user.set(0, new_guardian)
+}
 
 // Getters --------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -175,6 +197,14 @@ export function deposit_and_stake():void{
   // Function called by users to but tickets
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
+  const N:i32 = storage.getPrimitive<i32>('total_users', 0)
+  const guardian = get_guardian()
+
+  if(N == 0){
+    assert(context.sender == GUARDIAN, "Let the GUARDIAN deposit first")
+  }
+
+  // We add a little money that our contract covers
   let amount: u128 = context.attachedDeposit + STAKE_PRICE
 
   assert(amount >= MINIMUM_DEPOSIT, "Please deposit at least 0.01")
