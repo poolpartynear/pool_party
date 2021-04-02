@@ -426,14 +426,14 @@ export function raffle():i32{
   let prize:u128 = get_pool_prize()
 
   // We keep a small percent
-  let house_prize:u128 = prize/fees
-  stake_tickets_for(0, house_prize)
+  let reserve:u128 = prize / fees
+  stake_tickets_for(0, reserve)
 
   // We give most to the user
-  let user_prize:u128 = prize - house_prize
+  let user_prize:u128 = prize - reserve
   stake_tickets_for(winner, user_prize)
 
-  logging.log("Fees: " + house_prize.toString() + " Prize: " + user_prize.toString())
+  logging.log("Reserve: " + reserve.toString() + " Prize: " + user_prize.toString())
 
   // Set next raffle time
   storage.set<u64>('nxt_raffle_tmstmp', now + raffle_wait)
