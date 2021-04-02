@@ -19,8 +19,8 @@ const UNSTAKE_EPOCH:u64 = 4
 // The external pool stakes around 100yn less than what the user stakes
 const STAKE_PRICE:u128 = u128.from(100)
 
-// We force to stake a minimum of 0.01 Nears + stake_price
-const MINIMUM_DEPOSIT:u128 = u128.from("1000000000000000000000") + STAKE_PRICE
+// We force to stake a minimum of 0.01 Nears
+const MINIMUM_DEPOSIT:u128 = u128.from("1000000000000000000000")
 const MINIMUM_UNSTAKE:u128 = u128.from("1000000000000000000000")
 
 // The external pool
@@ -175,9 +175,9 @@ export function deposit_and_stake():void{
   // Function called by users to but tickets
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
-  let amount: u128 = context.attachedDeposit
+  let amount: u128 = context.attachedDeposit + STAKE_PRICE
 
-  assert(amount >= MINIMUM_DEPOSIT, "Please deposit at least 0.01 N + 100yN")
+  assert(amount >= MINIMUM_DEPOSIT, "Please deposit at least 0.01")
 
   // Deposit the money in the external pool
   let promise:ContractPromise = ContractPromise.create(
@@ -212,7 +212,7 @@ export function _deposit_and_stake(amount:u128):bool{
   }
   
   // Update binary tree and pool
-  stake_tickets_for(idx, amount - STAKE_PRICE)
+  stake_tickets_for(idx, amount)
 
   return true
 }
