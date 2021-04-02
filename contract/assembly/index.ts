@@ -405,9 +405,9 @@ function __unstake_external():bool{
 
 // Raffle ---------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-export function random_u128(max:u128):u128{
-  // Returns a random number between 0 and max
-  return u128.from(math.randomBuffer(16)) % max
+export function random_u128(min_inc:u128, max_exc:u128):u128{
+  // Returns a random number between min (included) and max (excluded)
+  return u128.from(math.randomBuffer(16)) % (max_exc - min_inc) + min_inc
 }
 
 export function raffle():i32{
@@ -418,14 +418,18 @@ export function raffle():i32{
 
   assert(now >= next_raffle, "Not enough time has passed")
 
-  // Raffle between the tickets that are not unstaked
-  let pool_tickets:u128 = get_pool_tickets() - get_to_unstake()
-  let winning_ticket:u128 = random_u128(pool_tickets)
-  
+  // Raffle between all the non-unstaked tickets, or give all to the reserve if
+  // nobody is playing
+  let winning_ticket:u128 = u128.Zero
+  if(user_tickets[0] != accum_weights[0]){
+    winning_ticket = random_u128(user_tickets[0], accum_weights[0])
+  }
+
+  // Retrieve the winning user from the binary tree
   let winner:i32 = select_winner(winning_ticket)
   let prize:u128 = get_pool_prize()
 
-  // We keep a small percent
+  // A part goes to the reserve
   let reserve:u128 = prize / fees
   stake_tickets_for(0, reserve)
 
