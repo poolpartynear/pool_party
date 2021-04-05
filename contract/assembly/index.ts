@@ -270,8 +270,8 @@ export function unstake(amount:u128):bool{
   storage.set<u128>('to_unstake', to_unstake + amount)
 
   // the user will be able to withdraw in 2 turns
-  let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
-  user_withdraw_turn[idx] = withdraw_turn + 2
+  let current_unstake_turn:u64 = storage.getPrimitive<u64>('unstake_turn', 0)
+  user_withdraw_turn[idx] = current_unstake_turn + 2
 
   // update user info
   user_tickets[idx] = user_tickets[idx] - amount
@@ -368,7 +368,8 @@ export function unstake_external():void{
   let to_unstake:u128 = get_to_unstake()
 
   if(to_unstake == u128.Zero){
-    return // Nobody asked to unstake their tickets
+    logging.log("Nobody asked to unstake their tickets, we will wait")
+    return
   }else{
     // There are tickets to unstake  
 
