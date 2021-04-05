@@ -5,9 +5,9 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
-    user_A = 'test-account-1614519168704-9311104'
-    user_B = 'test-account-1614519219937-7846099'
-    user_C = 'test-account-1614519260845-4406393'
+    user_A = 'test-account-1617661856680-7102334'
+    user_B = 'test-account-1617661821378-5472912'
+    user_C = 'test-account-1617661734708-7914243'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -216,7 +216,7 @@ describe('PoolParty', function () {
         expect(infos[i].available).toBe(available[i])
       }
 
-      expect(pool_info.total_staked).toBe(10+12.123+0.123456)
+      expect(pool_info.total_staked).toBe(9+11+0.123456)
     })
 
     it("if no one called unstake_external, the prize doesn't change", async function(){
@@ -252,12 +252,24 @@ describe('PoolParty', function () {
       }
     })
 
-    it("can claim money unstacked in 2 turns", async function(){
+    it("can claim money unstacked in 1 turn", async function(){
+      // Since this user asked to unstake money before the unstake_external
+      // they only needs to wait one turn
       account = await get_account(user_A)
       expect(account.staked_balance).toBe(9)
       expect(account.unstaked_balance).toBe(1)
+      expect(account.available_when).toBe(1)
+    })
+
+    it("can claim money unstacked in 2 turns", async function(){
+      // If a user unstakes money now, it should wait 2 turns
+      await unstake(0.001, contract_C)
+      account = await get_account(user_C)
+      expect(account.staked_balance).toBe(0.123456 - 0.001)
+      expect(account.unstaked_balance).toBe(0.001)
       expect(account.available_when).toBe(2)
     })
+
 
     it("ERROR: cannot unstack more money than available", async function(){
       await unstake(1, contract_C)
