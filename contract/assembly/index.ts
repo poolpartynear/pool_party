@@ -330,12 +330,12 @@ export function withdraw_external():void{
   // Function to call every 4 epochs to withdraw NEARs from the external pool
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
-  let unstake_epoch:u64 = storage.getPrimitive<u64>('next_unstake_epoch', context.epochHeight)
-  assert(context.epochHeight > unstake_epoch, "Not enough time has passed")
-
   let unstake_turn:u64 = storage.getPrimitive<u64>('unstake_turn', 0)
   let withdraw_turn:u64 = storage.getPrimitive<u64>('withdraw_turn', 1)
   assert(unstake_turn == withdraw_turn, "Please unstake_external first")
+
+  let unstake_epoch:u64 = storage.getPrimitive<u64>('next_unstake_epoch', context.epochHeight)
+  assert(context.epochHeight > unstake_epoch, "Not enough time has passed")
 
   // withdraw money from external pool
   let promise = ContractPromise.create(POOL, "withdraw_all", "",
