@@ -1,12 +1,11 @@
-import { init, random_u128, prepare, raffle, _deposit_and_stake,
-         _unstake, get_user_tickets, get_accum_weights,
-         select_winner } from '..';
-import { storage, Context, u128, logging, VMContext } from "near-sdk-as";
+import { random_u128, _deposit_and_stake, deposit_and_stake, unstake,
+         get_user_tickets, get_accum_weights, select_winner,
+         get_account } from '..';
+import { storage, Context, u128, logging, VMContext,
+         ContractPromiseResult } from "near-sdk-as";
 
 describe("Random", () => {
   it("should be random", () => {
-    init()
-
     let trials = 100
     let max = 10
     let numbers = new Array<i32>()
@@ -14,7 +13,7 @@ describe("Random", () => {
     for(let i=0; i < max; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
-      let rnd:u128 = random_u128(u128.from(max))
+      let rnd:u128 = random_u128(u128.Zero, u128.from(max))
 
       expect(rnd >= u128.Zero && u128.from(max) > rnd)
 
@@ -34,7 +33,7 @@ describe("Random", () => {
 describe("Binary Tree", () => {
   it("correctly stores/selects users", () => {
 
-    init()
+    VMContext.setPredecessor_account_id(Context.contractName)
 
     const subjects:i32 = 10
     for(let i=0; i < subjects; i++){
@@ -70,7 +69,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-     VMContext.setSigner_account_id("0")
+    VMContext.setSigner_account_id("0")
     _deposit_and_stake(u128.from(1))
 
     expected_weights = [62, 42, 18, 25, 15, 8, 7, 9, 9, 10]
@@ -79,7 +78,9 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _unstake(8, u128.from(1))
+    VMContext.setSigner_account_id("8")
+    VMContext.setPrepaid_gas(300000000000000)
+    unstake(u128.from(1))
     
     expected_weights = [61, 41, 18, 24, 15, 8, 7, 9, 8, 10]
     
@@ -87,7 +88,9 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _unstake(4, u128.from(3))
+    VMContext.setSigner_account_id("4")
+    VMContext.setPrepaid_gas(300000000000000)
+    unstake(u128.from(3))
 
     expected_weights = [58, 38, 18, 24, 12, 8, 7, 9, 8, 10]
 
@@ -109,5 +112,28 @@ describe("Binary Tree", () => {
     expect(select_winner(u128.from(52))).toBe(6, "wrong winner")
     expect(select_winner(u128.from(57))).toBe(6, "wrong winner")
     expect(select_winner(u128.from(11))).toBe(7, "wrong winner")
+  });
+})
+
+describe("Reserve Guardian", () => {
+  it("the reserve guardian must be the first user", () => {
+    
+    const balance:u128 = u128.from("200000000000000000000")
+
+    // If someone besides the guardian goes first it fails
+    VMContext.setSigner_account_id("notguardian.testnet")
+    VMContext.setAccount_balance(balance)
+    VMContext.setAttached_deposit(u128.from(1))
+    VMContext.setPrepaid_gas(300000000000000)
+
+    expect(deposit_and_stake).toThrow()
+
+    // It doesn't fail for the guardian
+    VMContext.setSigner_account_id("pooltest.testnet")
+    VMContext.setAccount_balance(balance)
+    VMContext.setAttached_deposit(u128.from(1))
+    VMContext.setPrepaid_gas(300000000000000)
+
+    expect(deposit_and_stake).not.toThrow()
   });
 })
