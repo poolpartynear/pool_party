@@ -111,6 +111,7 @@ describe('PoolParty', function () {
   });
 
   describe('Pool', function () {
+
     it("responds empty user for non existing users", async function(){
       let info = await get_account("non-existent-user")
       expect(info.staked_balance).toBe(0, "non-user has tickets")
@@ -122,6 +123,10 @@ describe('PoolParty', function () {
       let info = await get_pool_info(contract_A)
       expect(info.total_staked).toBe(0, "pool has tickets")
       expect(info.prize).toBe(0, "pool has price")
+    })
+
+    it("ERROR: doesn't allow anyone but the guardian to go first", async function(){
+      await deposit_and_stake(5, contract_B)
     })
 
     it("correctly add tickets to new users", async function(){
