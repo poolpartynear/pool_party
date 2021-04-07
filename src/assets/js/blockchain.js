@@ -4,8 +4,10 @@ let getConfig = require('./config')
 
 const nearConfig = getConfig('testnet')
 
+window.nearAPI = nearAPI
+
 export function floor(value, decimals=2){
-  value = parseFloat(value)
+  value = parseFloat(value.replace(',',''))
   let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
   if(isNaN(number)){number = 0}
   return number
@@ -31,9 +33,10 @@ export async function initNEAR() {
   // Initializing our contract APIs by contract name and configuration.
   window.contract = await near.loadContract(
     nearConfig.contractName,
-    {viewMethods: ['get_account', 'get_pool_info', 'get_winners'],
+    {viewMethods: ['get_account', 'get_pool_info', 'get_winners',
+                   'get_to_unstake', 'select_winner', 'get_guardian' ],
      changeMethods: ['unstake', 'deposit_and_stake', 'withdraw_all',
-                     'update_prize', 'raffle'],
+                     'update_prize', 'raffle', 'change_guardian'],
      sender: window.walletAccount.accountId}
   );
 }
