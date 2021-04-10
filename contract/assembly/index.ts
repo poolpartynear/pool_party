@@ -20,10 +20,10 @@ const UNSTAKE_EPOCH:u64 = 4
 const STAKE_PRICE:u128 = u128.from(100)
 
 // The external pool
-const POOL:string = "blazenet.pool.f863973.m0"
-
+const POOL:string =  "blazenet.pool.f863973.m0" // "test-account-1617661598132-7211816"
 // The first guardian
-const GUARDIAN = 'pooltest.testnet'
+const GUARDIAN = 'pooltest.testnet' // "test-account-1617661856680-7102334"
+
 
 // Guardian of the Reserve ----------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ export function get_guardian():string{
 export function change_guardian(new_guardian:string):void{
   const guardian:string = get_guardian()
 
-  assert(context.sender == guardian, "Only the guardian can call me")
+  assert(context.predecessor == guardian, "Only the guardian can call me")
 
   // Delete the current_guardian key
   user_to_idx.delete(guardian)
@@ -203,7 +203,7 @@ export function deposit_and_stake():void{
   const guardian = get_guardian()
 
   if(N == 0){
-    assert(context.sender == GUARDIAN, "Let the GUARDIAN deposit first")
+    assert(context.predecessor == GUARDIAN, "Let the GUARDIAN deposit first")
   }
 
   // We add a little money that our contract covers so the user immediately
@@ -226,16 +226,16 @@ export function _deposit_and_stake(amount:u128):bool{
 
   let idx:i32 = 0
 
-  if(user_to_idx.contains(context.sender)){
+  if(user_to_idx.contains(context.predecessor)){
     logging.log("Staking on existing user: " + idx.toString())
-    idx = user_to_idx.getSome(context.sender)
+    idx = user_to_idx.getSome(context.predecessor)
   }else{
     idx = storage.getPrimitive<i32>('total_users', 0)
     storage.set<i32>('total_users', idx+1)
     
     logging.log("Creating user: " + idx.toString())
-    user_to_idx.set(context.sender, idx)
-    idx_to_user.set(idx, context.sender)
+    user_to_idx.set(context.predecessor, idx)
+    idx_to_user.set(idx, context.predecessor)
     user_tickets.push(u128.Zero)
     accum_weights.push(u128.Zero)
     user_unstaked.push(u128.Zero)
@@ -254,10 +254,10 @@ export function _deposit_and_stake(amount:u128):bool{
 export function unstake(amount:u128):bool{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
-  assert(user_to_idx.contains(context.sender), "User dont exist")
+  assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
   // Get user info
-  let idx:i32 = user_to_idx.getSome(context.sender)
+  let idx:i32 = user_to_idx.getSome(context.predecessor)
   let tickets:u128 = user_tickets[idx]
 
   // Check if it has enough money
@@ -300,9 +300,9 @@ export function withdraw_all():void{
   // Function called by the user to withdraw their staked NEARs
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
-  assert(user_to_idx.contains(context.sender), "User dont exist")
+  assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
-  let idx:i32 = user_to_idx.getSome(context.sender)
+  let idx:i32 = user_to_idx.getSome(context.predecessor)
   let amount:u128 = user_unstaked[idx] 
   assert(amount > u128.Zero, "Nothing to unstake")
 
@@ -311,7 +311,7 @@ export function withdraw_all():void{
 
   // Send money back to the user
   let iargs:IntArgs = new IntArgs(idx, amount) 
-  ContractPromiseBatch.create(context.sender)
+  ContractPromiseBatch.create(context.predecessor)
   .transfer(amount)
   .then(context.contractName)
   .function_call("_withdraw_all", iargs.encode(), u128.Zero, 100000000000000)
@@ -320,7 +320,7 @@ export function withdraw_all():void{
 export function _withdraw_all(idx:i32, amount:u128):void{
   check_internal()
   user_unstaked[idx] = u128.Zero
-  logging.log("Sent " + amount.toString() + " to " + context.sender)
+  logging.log("Sent " + amount.toString() + " to " + context.predecessor)
 }
 
 
