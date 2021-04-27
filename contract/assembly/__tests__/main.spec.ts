@@ -66,8 +66,7 @@ describe("Binary Tree", () => {
 
     const subjects:i32 = 10
     for(let i=0; i < subjects; i++){
-      VMContext.setSigner_account_id(i.toString())
-      _deposit_and_stake(u128.from(i+1))
+      _deposit_and_stake(i.toString(), u128.from(i+1))
     }
     
     let expected_weights:Array<i32> = [55, 38, 16, 21, 15, 6, 7, 8, 9, 10]
@@ -77,11 +76,9 @@ describe("Binary Tree", () => {
     }
 
     // Modify some of them
-    VMContext.setSigner_account_id("5")
-    _deposit_and_stake(u128.from(2))
+    _deposit_and_stake("5", u128.from(2))
 
-    VMContext.setSigner_account_id("7")
-    _deposit_and_stake(u128.from(1))
+    _deposit_and_stake("7", u128.from(1))
    
     expected_weights = [58, 39, 18, 22, 15, 8, 7, 9, 9, 10]
 
@@ -89,8 +86,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    VMContext.setSigner_account_id("3")
-    _deposit_and_stake(u128.from(3))
+    _deposit_and_stake("3", u128.from(3))
 
     expected_weights = [61, 42, 18, 25, 15, 8, 7, 9, 9, 10]
     
@@ -98,8 +94,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    VMContext.setSigner_account_id("0")
-    _deposit_and_stake(u128.from(1))
+    _deposit_and_stake("0", u128.from(1))
 
     expected_weights = [62, 42, 18, 25, 15, 8, 7, 9, 9, 10]
 
@@ -107,7 +102,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    VMContext.setSigner_account_id("8")
+    VMContext.setPredecessor_account_id("8")
     VMContext.setPrepaid_gas(300000000000000)
     unstake(u128.from(1))
     
@@ -117,7 +112,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    VMContext.setSigner_account_id("4")
+    VMContext.setPredecessor_account_id("4")
     VMContext.setPrepaid_gas(300000000000000)
     unstake(u128.from(3))
 
@@ -150,7 +145,7 @@ describe("Reserve Guardian", () => {
     const balance:u128 = u128.from("200000000000000000000")
 
     // If someone besides the guardian goes first it fails
-    VMContext.setSigner_account_id("notguardian.testnet")
+    VMContext.setPredecessor_account_id("notguardian.testnet")
     VMContext.setAccount_balance(balance)
     VMContext.setAttached_deposit(u128.from(1))
     VMContext.setPrepaid_gas(300000000000000)
@@ -158,7 +153,7 @@ describe("Reserve Guardian", () => {
     expect(deposit_and_stake).toThrow()
 
     // It doesn't fail for the guardian
-    VMContext.setSigner_account_id("pooltest.testnet")
+    VMContext.setPredecessor_account_id("pooltest.testnet")
     VMContext.setAccount_balance(balance)
     VMContext.setAttached_deposit(u128.from(1))
     VMContext.setPrepaid_gas(300000000000000)

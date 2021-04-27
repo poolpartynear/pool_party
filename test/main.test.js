@@ -5,9 +5,9 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
-    user_A = 'test-account-1617661856680-7102334'
-    user_B = 'test-account-1617661821378-5472912'
-    user_C = 'test-account-1617661734708-7914243'
+    user_A = 'test-account-1619562128269-5472005'
+    user_B = 'test-account-1619561956410-4537326'
+    user_C = 'test-account-1619561107514-6994609'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -16,8 +16,8 @@ describe('PoolParty', function () {
       return near.loadContract(nearConfig.contractName, {
         viewMethods: ['get_account'],
         changeMethods: ['get_pool_info', 'deposit_and_stake', 'unstake',
-                        'withdraw_all', 'update_prize', 'withdraw_external',
-                        'unstake_external', 'get_pool_tickets',
+                        'withdraw_all', 'update_prize', 'interact_external',
+                        'get_pool_tickets',
                         'get_user_tickets', '_deposit_and_stake',
                         '_unstake_external', '_withdraw_external', '_withdraw_all'],
         sender: user
@@ -51,17 +51,9 @@ describe('PoolParty', function () {
       return nearlib.providers.getTransactionLastResult(result)
     }
 
-    unstake_external = async function(contract){
+    interact_external = async function(contract){
       let result = await contract.account.functionCall(
-        nearConfig.contractName, 'unstake_external', {}, 300000000000000, 0
-      )
-
-      return nearlib.providers.getTransactionLastResult(result)
-    }
-
-    withdraw_external = async function(contract){
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'withdraw_external', {}, 300000000000000, 0
+        nearConfig.contractName, 'interact_external', {}, 300000000000000, 0
       )
 
       return nearlib.providers.getTransactionLastResult(result)
@@ -236,15 +228,10 @@ describe('PoolParty', function () {
       }
     })
 
-    it("ERORR: cannot withdraw since nobody unstaked", async function(){
-      await withdraw_external(contract_B)
-    })
-
-
     it("on external unstake, the prize and pool tickets is updated", async function(){
       let pool = 'mypool'
       if(pool == 'mypool'){
-        let result = await unstake_external(contract_C)
+        let result = await interact_external(contract_C)
         expect(result).toBe(true)
 
         await update_prize()
@@ -275,21 +262,22 @@ describe('PoolParty', function () {
       expect(account.available_when).toBe(2)
     })
 
-
     it("ERROR: cannot unstack more money than available", async function(){
       await unstake(1, contract_C)
     })
 
     it("ERROR: cannot access method _deposit_and_stake", async ()=>{
-      await contract_A._deposit_and_stake({amount:'1'})  
+      await contract_A._deposit_and_stake({user:user_A, amount:'1'})  
     })
 
     it("ERROR: cannot access method _unstake_external", async ()=>{
-      await contract_A._unstake_external()  
+      await contract_A._unstake_external({user:user_A, amount:"100"})  
     })
+
     it("ERROR: cannot access method _withdraw_exteral", async ()=>{
       await contract_A._withdraw_external()  
     })
+
     it("ERROR: cannot access method _withdraw_all", async ()=>{
       await contract_A._withdraw_all({idx:0, amount:'1'})  
     })
