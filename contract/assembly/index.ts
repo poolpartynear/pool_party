@@ -20,16 +20,11 @@ const UNSTAKE_EPOCH:u64 = 4
 const STAKE_PRICE:u128 = u128.from(100)
 
 // The external pool
-const POOL:string = 'test-account-1619558129964-3862058' //  "blazenet.pool.f863973.m0"
+const POOL:string = "blazenet.pool.f863973.m0"
 
 // The first guardian
-const GUARDIAN = 'test-account-1619562128269-5472005' // 'pooltest.testnet'
+const GUARDIAN = 'pooltest.testnet'
 
-// Guardian of the Reserve ----------------------------------------------------
-// ----------------------------------------------------------------------------
-export function get_guardian():string{
-  return storage.getPrimitive<string>('reserve_guardian', GUARDIAN)
-}
 
 // Getters --------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -52,15 +47,21 @@ export function get_account(account_id: string): User{
   
   // Compute reminder
   let remining:u64 = 0
-  if(now <= when){ remining = when - now }
+  if(when >= now){ remining = when - now }
 
   return new User(tickets, unstaked, remining, available)
 }
 
 export function get_current_turn():u64{
-  // withdraw_turn increases by 1 each time we withdraw from external
-  // if a user asks to withdraw NEARs, they will be available in 2 turns
-  return storage.getPrimitive<u64>('withdraw_turn', 0)
+  // The current_turn increases by 1 each time we withdraw from external
+  return storage.getPrimitive<u64>('current_turn', 0)
+}
+
+export function next_withdraw_turn():u64{
+  // The withdraw_turn increases by 1 each time we unstake from external
+  // when a user unstakes, we asign them the withdraw turn. The user can
+  // withdraw when current_turn is equal to their asigned turn 
+  return storage.getPrimitive<u64>('next_withdraw_turn', 1)
 }
 
 export function get_pool_info():Pool{
@@ -202,7 +203,6 @@ export function deposit_and_stake():void{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
 
   const N:i32 = storage.getPrimitive<i32>('total_users', 0)
-  const guardian = get_guardian()
 
   if(N == 0){
     assert(context.predecessor == GUARDIAN, "Let the GUARDIAN deposit first")
@@ -267,18 +267,17 @@ export function unstake(amount:u128):bool{
 
   // Get user info
   let idx:i32 = user_to_idx.getSome(context.predecessor)
-  let tickets:u128 = user_tickets[idx]
 
   // Check if it has enough money
-  assert(amount <= tickets, "Not enough money")
+  assert(amount <= user_tickets[idx], "Not enough money")
 
   logging.log("Unstaking "+ amount.toString() +" from user "+ idx.toString())
 
   // add to the amount we will unstake next time
   storage.set<u128>('to_unstake', get_to_unstake() + amount)
 
-  // the user will be able to withdraw in 2 turns
-  user_withdraw_turn[idx] = get_current_turn() + 2
+  // the user will be able to in the next withdraw_turn
+  user_withdraw_turn[idx] = next_withdraw_turn()
 
   // update user info
   user_tickets[idx] = user_tickets[idx] - amount
@@ -342,17 +341,8 @@ export function _withdraw_all(idx:i32, amount:u128):void{
 // Interact external ----------------------------------------------------------
 // ----------------------------------------------------------------------------
 export function interact_external():void{
-  assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
-  
-  const interacting:bool = storage.getPrimitive<bool>('interacting_with_external',
-                                                      false)
-
-  assert(interacting == false, "Already interacting with external pool")
-
-  storage.set<bool>('interacting_with_external', true)
-
   const current_action:string = storage.getPrimitive<string>('external_action',
-                                                             'withdraw')
+                                                             'unstake')
   if(current_action == 'withdraw'){
     withdraw_external()
   }else{
@@ -361,6 +351,10 @@ export function interact_external():void{
 
 }
 
+function fail_if_already_interacting():void{
+  const interacting:bool = storage.getPrimitive<bool>('interacting', false)
+  assert(interacting == false, "Already interacting with external pool")
+}
 
 // Withdraw external ----------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -369,6 +363,10 @@ function withdraw_external():void{
   const withdraw_epoch:u64 = storage.getPrimitive<u64>('next_withdraw_epoch',
                                                        context.epochHeight)
   assert(context.epochHeight >= withdraw_epoch, "Not enough time has passed")
+
+  // Check if we are already interacting, if not, set it to true
+  fail_if_already_interacting()
+  storage.set<bool>('interacting', true)
 
   // withdraw money from external pool
   let promise = ContractPromise.create(POOL, "withdraw_all", "",
@@ -385,8 +383,8 @@ export function _withdraw_external():bool{
 
   if(response.status == 1){
     // Everything worked, next time we want to unstake
-    storage.set<u64>('withdraw_turn', get_current_turn() + 1)
     storage.set<string>('external_action', 'unstake')
+    storage.set<u64>('current_turn', get_current_turn() + 1)
   }
 
   storage.set<bool>('interacting', false)
@@ -398,6 +396,10 @@ export function _withdraw_external():bool{
 // ----------------------------------------------------------------------------
 function unstake_external():void{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
+    
+  // Check if we are already interacting, if not, set it to true
+  fail_if_already_interacting()
+  storage.set<bool>('interacting', true)
 
   const to_unstake:u128 = get_to_unstake()
 
@@ -430,11 +432,14 @@ export function _unstake_external(user:string, amount:u128):bool{
     // remove tickets form pool
     storage.set<u128>('pool_tickets', get_pool_tickets() - amount)
 
-    // update the epoch in which we can unstake again from external
+    // update the epoch in which we can withdraw
     storage.set<u64>('next_withdraw_epoch', context.epochHeight + UNSTAKE_EPOCH)
 
     // next time we want to withdraw
     storage.set<string>('external_action', 'withdraw')
+
+    // A turn passed
+    storage.set<u64>('next_withdraw_turn', next_withdraw_turn() + 1)
   }else{
     // Rollback to_unstake
     storage.set<u128>('to_unstake', amount)
@@ -466,7 +471,8 @@ export function raffle():i32{
   // If the total amount of accumulated tickets is equal to the tickets of
   // the reserve, then nobody is playing. Pick the ticket 0 so the reserve wins
   let winning_ticket:u128 = u128.Zero
-  if(user_tickets[0] != accum_weights[0]){
+  if(accum_weights[0] > user_tickets[0]){
+    // We have more tickets than those of the reserve
     winning_ticket = random_u128(user_tickets[0], accum_weights[0])
   }
 
