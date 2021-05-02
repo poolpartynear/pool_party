@@ -7,7 +7,7 @@ const nearConfig = getConfig('testnet')
 window.nearAPI = nearAPI
 
 export function floor(value, decimals=2){
-  value = parseFloat(value.replace(',',''))
+  value = parseFloat(String(value).replace(',', ''))
   let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
   if(isNaN(number)){number = 0}
   return number
@@ -34,9 +34,9 @@ export async function initNEAR() {
   window.contract = await near.loadContract(
     nearConfig.contractName,
     {viewMethods: ['get_account', 'get_pool_info', 'get_winners',
-                   'get_to_unstake', 'select_winner', 'get_guardian' ],
+                   'get_to_unstake', 'select_winner', 'get_guardian'],
      changeMethods: ['unstake', 'deposit_and_stake', 'withdraw_all',
-                     'update_prize', 'raffle', 'change_guardian'],
+                     'update_prize', 'raffle', 'interact_external'],
      sender: window.walletAccount.accountId}
   );
 }
@@ -45,8 +45,6 @@ export async function stake(_amount){
   let amount = nearAPI.utils.format.parseNearAmount(_amount.toString())
 
   // Add 100yn, which the external pool "charges"
-  amount = amount.substr(0, amount.length - 3) + "100"
-
   console.log("Staking " + amount + " NEAR")
 
   const account = window.walletConnection.account()
@@ -64,9 +62,9 @@ export async function unstake(amount){
   return nearAPI.providers.getTransactionLastResult(result)
 }
 
-export async function unstake_external(){
+export async function interact_external(){
   let result = await contract.account.functionCall(
-    nearConfig.contractName, 'unstake_external', {}, 300000000000000, 0
+    nearConfig.contractName, 'interact_external', {}, 300000000000000, 0
   )
 
   return nearAPI.providers.getTransactionLastResult(result)
@@ -75,14 +73,6 @@ export async function unstake_external(){
 export async function withdraw(){
   let result = await contract.account.functionCall(
     nearConfig.contractName, 'withdraw_all', {}, 300000000000000, 0
-  )
-
-  return nearAPI.providers.getTransactionLastResult(result)
-}
-
-export async function withdraw_external(){
-  let result = await contract.account.functionCall(
-    nearConfig.contractName, 'withdraw_external', {}, 300000000000000, 0
   )
 
   return nearAPI.providers.getTransactionLastResult(result)
@@ -101,6 +91,7 @@ export async function get_account(account_id){
 export async function get_pool_info(){
   let info = await contract.get_pool_info()
   info.total_staked = floor(nearAPI.utils.format.formatNearAmount(info.total_staked))
+  info.reserve = floor(nearAPI.utils.format.formatNearAmount(info.reserve))
   info.prize = floor(nearAPI.utils.format.formatNearAmount(info.prize))
   info.next_prize_tmstmp = (info.next_prize_tmstmp/1000000).toFixed(0)
   return info  

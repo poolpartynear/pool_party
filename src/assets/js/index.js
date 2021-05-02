@@ -1,13 +1,13 @@
 import {initNEAR, login, logout, get_pool_info, get_account,
         stake, unstake, withdraw, raffle, update_prize,
-        get_winners, floor, unstake_external, withdraw_external} from './blockchain'
+        get_winners, floor, interact_external} from './blockchain'
 
 async function get_and_display_pool_info(){
   console.log("Getting information from the pool - VIEW")
 
   window.pool = await get_pool_info()
 
-  $('.pool-tickets').html(pool.total_staked)
+  $('.pool-tickets').html(pool.total_staked - pool.reserve)
   $('.pool-prize').html(pool.prize)
 
   $("#time-left")
@@ -28,6 +28,7 @@ async function get_and_display_pool_info(){
 
 async function login_flow(){
   $('#account').html(window.walletAccount.accountId+' <i class="fas fa-caret-down"></i>')
+  get_and_display_user_info()
 
   if(pool.next_prize_tmstmp < Date.now() && pool.total_staked>0){
     console.log("Asking pool to make the raffle")
@@ -38,11 +39,8 @@ async function login_flow(){
   }
 
   if(pool.withdraw_ready){
-    console.log("Asking pool to withdraw from the external pool")
-    await withdraw_external()
-
-    console.log("Asking pool to unstake from the external pool")
-    await unstake_external()
+    console.log("Interacting with external pool")
+    await interact_external()
   }
 
   get_and_display_user_info()
@@ -66,7 +64,7 @@ async function get_and_display_user_info(){
   $('.user-unstaked').html(user.unstaked_balance)
   
   if(user.staked_balance > 0){
-    $('#user-odds').html((user.staked_balance/pool.total_staked).toFixed(2))
+    $('#user-odds').html((user.staked_balance/(pool.total_staked-pool.reserve)).toFixed(2))
   }else{
     $('#user-odds').html(0)
   }
@@ -121,8 +119,7 @@ window.leave_pool = async function(){
 }
 
 window.unstake = unstake
-window.unstake_external = unstake_external
-window.withdraw_external = withdraw_external
+window.interact_external = interact_external
 
 window.withdraw = async function(){
   console.log("Withdrawing all from user")
