@@ -74,8 +74,9 @@ export function get_pool_info():Pool{
   const current_epoch:u64 = context.epochHeight
   const withdraw_epoch:u64 = storage.getPrimitive<u64>('next_withdraw_epoch',
                                                        context.epochHeight)
-
-  return new Pool(tickets, prize, next_raffle, current_epoch >= withdraw_epoch)
+  const reserve: u128 = user_tickets[0]
+  const withdraw_from_external:bool = current_epoch >= withdraw_epoch
+  return new Pool(tickets, reserve, prize, next_raffle, withdraw_from_external)
 }
 
 export function get_pool_prize():u128{
