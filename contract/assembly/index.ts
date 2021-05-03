@@ -29,8 +29,7 @@ const GUARDIAN:string = 'pooltest.testnet'
 // Getters --------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 export function get_account(account_id: string): User{
-  // Information from the users: amount of tickets it has, amount it asked to
-  // unstake, turns left to unstake, and if the withdrawal is available
+  // Returns information for the account 'account_id'
   if(!user_to_idx.contains(account_id)){
     return new User(u128.Zero, u128.Zero, false)
   }
@@ -42,12 +41,11 @@ export function get_account(account_id: string): User{
   const when:u64 = user_withdraw_turn[idx]
   let now:u64 = get_current_turn()
   
-  // If 2 turns have passed, then the money is available 
-  const available:bool = unstaked > u128.Zero && now >= when
-  
-  // Compute reminder
+  // Compute remining time for withdraw to be ready
   let remining:u64 = 0
   if(when >= now){ remining = when - now }
+
+  const available:bool = unstaked > u128.Zero && now >= when
 
   return new User(tickets, unstaked, remining, available)
 }
@@ -144,7 +142,7 @@ class PoolArgs{
 export function update_prize():void{
   assert(context.prepaidGas >= MIN_GAS, "Not enough gas")
   
-  // Ask for how much NEARs we have staked in the external pool
+  // Ask how many NEARs we have staked in the external pool
   let args:PoolArgs = new PoolArgs(context.contractName)
 
   let promise = ContractPromise.create(POOL, "get_account", args.encode(),
@@ -358,6 +356,7 @@ function fail_if_already_interacting():void{
   assert(interacting == false, "Already interacting with external pool")
 }
 
+
 // Withdraw external ----------------------------------------------------------
 // ----------------------------------------------------------------------------
 function withdraw_external():void{
@@ -425,13 +424,13 @@ function unstake_external():void{
   }
 }
 
-export function _unstake_external(user:string, amount:u128):bool{
+export function _unstake_external(_user:string, amount:u128):bool{
   check_internal()
 
   const response = get_callback_result()
 
   if(response.status == 1){
-    // remove tickets form pool
+    // remove tickets from pool
     storage.set<u128>('pool_tickets', get_pool_tickets() - amount)
 
     // update the epoch in which we can withdraw
@@ -468,13 +467,13 @@ export function raffle():i32{
 
   assert(now >= next_raffle, "Not enough time has passed")
 
-  // Raffle between all the tickets. Exclude the tickets from the reserve
-  // i.e. exclude the tickets from 0 to user_ticekts[0]
   // If the total amount of accumulated tickets is equal to the tickets of
   // the reserve, then nobody is playing. Pick the ticket 0 so the reserve wins
   let winning_ticket:u128 = u128.Zero
+
   if(accum_weights[0] > user_tickets[0]){
-    // We have more tickets than those of the reserve
+    // Raffle between all the tickets, excluding those from the reserve
+    // i.e. exclude the tickets numbered from 0 to user_tickets[0]
     winning_ticket = random_u128(user_tickets[0], accum_weights[0])
   }
 
@@ -503,7 +502,7 @@ export function raffle():i32{
 
 export function select_winner(winning_ticket:u128):i32{
   // Gets the user with the winning ticket by searching in the binary tree.
-  // This function enumerates the users in pre-order. This doesn't affect
+  // This function enumerates the users in pre-order. This does NOT affect
   // the probability of winning, which is nbr_tickets_owned / tickets_total.
   let idx:i32 = 0
 
