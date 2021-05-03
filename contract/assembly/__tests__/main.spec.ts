@@ -41,12 +41,13 @@ describe("Random", () => {
     for(let i=0; i < trials; i++){
       let rnd:u128 = random_u128(u128.from(min), u128.from(max))
 
-      expect(rnd >= u128.Zero && u128.from(max) > rnd)
+      expect(rnd >= u128.from(min) && u128.from(max) > rnd)
 
       for(let j=0; j < total; j++){
         if(rnd == u128.from(j)){ numbers[j] = numbers[j] + 1 }
       }
     }
+
     for(let i=0; i < min; i++){ expect(numbers[i] == 0 ).toBe(true) }
 
     for(let i=min; i < max; i++){
