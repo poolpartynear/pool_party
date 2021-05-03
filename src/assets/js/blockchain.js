@@ -7,7 +7,7 @@ const nearConfig = getConfig('testnet')
 window.nearAPI = nearAPI
 
 export function floor(value, decimals=2){
-  value = parseFloat(value.replace(',',''))
+  value = parseFloat(String(value).replace(',',''))
   let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
   if(isNaN(number)){number = 0}
   return number
