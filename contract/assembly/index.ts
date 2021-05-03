@@ -331,7 +331,7 @@ export function _withdraw_all(idx:i32, amount:u128):void{
   let response = get_callback_result()
 
   if(response.status == 1){
-    logging.log("Sent " + amount.toString() + " to " + idx_to_user[idx])
+    logging.log("Sent " + amount.toString() + " to " + idx_to_user.getSome(idx))
   }else{
     user_unstaked[idx] = amount  // It failed, add unstaked back to user
   }
