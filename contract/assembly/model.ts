@@ -7,6 +7,7 @@ import { PersistentVector, PersistentMap, u128, math } from "near-sdk-as";
 @nearBindgen
 export class Pool{
   constructor(public total_staked:u128,
+              public reserve:u128,
               public prize:u128,
               public next_prize_tmstmp:u64,
               public withdraw_ready:true){}
