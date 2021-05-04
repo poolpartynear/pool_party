@@ -424,7 +424,7 @@ function unstake_external():void{
   }
 }
 
-export function _unstake_external(_user:string, amount:u128):bool{
+export function _unstake_external(user:string, amount:u128):bool{
   check_internal()
 
   const response = get_callback_result()
