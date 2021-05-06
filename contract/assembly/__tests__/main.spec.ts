@@ -4,6 +4,18 @@ import { random_u128, _deposit_and_stake, deposit_and_stake, unstake,
 import { storage, Context, u128, logging, VMContext,
          ContractPromiseResult } from "near-sdk-as";
 
+
+describe("u128 test", () => {
+  it("returns 0 for small divisions", () => {
+    const max = 100
+    for(let i=0; i < max; i++){
+      let div:u128 = u128.from(i) / u128.from(max)
+      expect(div).toBe(u128.Zero)
+    }
+  })
+})
+
+
 describe("Random", () => {
   it("should be random", () => {
     let trials = 100
@@ -57,7 +69,6 @@ describe("Random", () => {
     for(let i=max; i < total; i++){ expect(numbers[i] == 0 ).toBe(true) }
   });
 });
-
 
 
 describe("Binary Tree", () => {

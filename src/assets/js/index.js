@@ -32,6 +32,7 @@ async function login_flow(){
 
   if(pool.next_prize_tmstmp < Date.now() && pool.total_staked>0){
     console.log("Asking pool to make the raffle")
+    await update_prize()
     await raffle()
   }else{
     console.log("Asking pool to update prize")

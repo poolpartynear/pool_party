@@ -5,9 +5,9 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
-    user_A = 'test-account-1619562128269-5472005'
-    user_B = 'test-account-1619561956410-4537326'
-    user_C = 'test-account-1619561107514-6994609'
+    user_A = 'test-account-1620312539481-8279000'
+    user_B = 'test-account-1620312528246-8816479'
+    user_C = 'test-account-1620312496860-5528612'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -260,6 +260,14 @@ describe('PoolParty', function () {
       expect(account.staked_balance).toBe(0.123456 - 0.001)
       expect(account.unstaked_balance).toBe(0.001)
       expect(account.available_when).toBe(2)
+    })
+
+    it("can raffle", async function(){
+      await raffle()
+    })
+
+    it("ERROR: cannot raffle again, it has to wait", async function(){
+      await raffle()
     })
 
     it("ERROR: cannot unstack more money than available", async function(){
