@@ -109,10 +109,16 @@ export function get_winners():Array<Winner>{
   return to_return
 }
 
+export function get_guardian():string{ return GUARDIAN }
+
 export function get_user_tickets(idx:i32):u128{ return user_tickets[idx] }
 
 export function get_accum_weights(idx:i32):u128{ return accum_weights[idx] }
 
+export function get_user_by_id(idx:i32):string{
+    if(idx_to_user.contains(idx)){ return idx_to_user.getSome(idx) }
+    return ""
+}
 
 // Check internal function ----------------------------------------------------
 // ----------------------------------------------------------------------------

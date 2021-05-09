@@ -34,7 +34,8 @@ export async function initNEAR() {
   window.contract = await near.loadContract(
     nearConfig.contractName,
     {viewMethods: ['get_account', 'get_pool_info', 'get_winners',
-                   'get_to_unstake', 'select_winner', 'get_guardian'],
+                   'get_to_unstake', 'select_winner', 'get_guardian',
+                   'get_user_by_id', 'get_user_tickets', 'get_accum_weights'],
      changeMethods: ['unstake', 'deposit_and_stake', 'withdraw_all',
                      'update_prize', 'raffle', 'interact_external'],
      sender: window.walletAccount.accountId}
@@ -43,9 +44,6 @@ export async function initNEAR() {
 
 export async function stake(_amount){
   let amount = nearAPI.utils.format.parseNearAmount(_amount.toString())
-
-  // Add 100yn, which the external pool "charges"
-  console.log("Staking " + amount + " NEAR")
 
   const account = window.walletConnection.account()
   account.functionCall(

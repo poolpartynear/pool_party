@@ -6,15 +6,12 @@ async function get_and_display_pool_info(){
   console.log("Getting information from the pool - VIEW")
 
   window.pool = await get_pool_info()
-
-  $('.pool-tickets').html(pool.total_staked - pool.reserve)
+  
+  $('.pool-tickets').html(floor(pool.total_staked - pool.reserve))
   $('.pool-prize').html(pool.prize)
 
-  $("#time-left")
-  .countdown(pool.next_prize_tmstmp, function(event) {
-    $(this).text(
-      event.strftime('%H:%M:%S')
-    );
+  $("#time-left").countdown(pool.next_prize_tmstmp, function(event) {
+    $(this).text( event.strftime('%H:%M:%S') );
   });
 
   console.log("Getting winners - VIEW")  
@@ -22,7 +19,11 @@ async function get_and_display_pool_info(){
 
   $('#winners').html('')
   for (var i = 0; i < winners.length; i++) {
-    $('#winners').append(`<li>${winners[i].account_id} - ${winners[i].amount} N</li>`);
+    $('#winners').append(
+      `<li class="row">
+        <div class="col-8 text-start">${winners[i].account_id}</div>
+        <div class="col-4 text-end">${winners[i].amount} N  </div>
+       </li>`);
   }
 }
 
@@ -30,9 +31,8 @@ async function login_flow(){
   $('#account').html(window.walletAccount.accountId+' <i class="fas fa-caret-down"></i>')
   get_and_display_user_info()
 
-  if(pool.next_prize_tmstmp < Date.now() && pool.total_staked>0){
+  if(pool.next_prize_tmstmp < Date.now() && pool.total_staked > 0){
     console.log("Asking pool to make the raffle")
-    await update_prize()
     await raffle()
   }else{
     console.log("Asking pool to update prize")
@@ -65,7 +65,9 @@ async function get_and_display_user_info(){
   $('.user-unstaked').html(user.unstaked_balance)
   
   if(user.staked_balance > 0){
-    $('#user-odds').html((user.staked_balance/(pool.total_staked-pool.reserve)).toFixed(2))
+    let odds = user.staked_balance / (pool.total_staked - pool.reserve)
+    if(odds < 0.01){ odds = "< 0.01" }else{ odds = odds.toFixed(2) }
+    $('#user-odds').html(odds)
   }else{
     $('#user-odds').html(0)
   }

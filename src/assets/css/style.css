@@ -13,6 +13,7 @@ body {
   color: #444444;
 }
 
+
 a {
   color: #f26f8d;
   text-decoration: none;
@@ -22,6 +23,12 @@ a:hover {
   color: #ffffff;
   text-decoration: none;
 }
+
+#footer a{
+  color: #ffffff;
+  font-weight:800;
+}
+
 
 h1, h2, h3, h4, h5, h6 {
   font-family: "Montserrat", sans-serif;
@@ -435,7 +442,7 @@ ul{
   font-size: 48px;
   font-weight: 700;
   line-height: 56px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 #hero h1 span {
@@ -444,7 +451,7 @@ ul{
 }
 
 #hero h2 {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 40px;
   font-size: 24px;
 }
