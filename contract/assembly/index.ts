@@ -210,7 +210,7 @@ class IdxAmount{
 
 export function deposit_and_stake():void{
   // Function called by users to buy tickets
-  assert(context.prepaidGas >= 180*TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 190*TGAS, "Not enough gas")
 
   let amount:u128 = context.attachedDeposit
   assert(amount > u128.Zero, "Please attach some NEARs")
