@@ -1707,11 +1707,9 @@ section {
 #footer .copyright {
   /*border-top: 1px solid #010479;*/
   text-align: center;
-  padding-top: 30px;
 }
 
 #footer .credits {
-  padding-top: 10px;
   text-align: center;
   font-size: 13px;
   color: #fff;
