@@ -25,6 +25,10 @@ const POOL:string = "blazenet.pool.f863973.m0"
 // The first guardian
 const GUARDIAN:string = 'pooltest.testnet'
 
+// If the tree gets too high (>14 levels) traversing it gets expensive,
+// lets cap the max number of users, so traversing the tree is at max 90TGAS
+const MAX_USERS:i32 = 8100
+
 
 // Getters --------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -146,13 +150,11 @@ class PoolArgs{
 }
 
 export function update_prize():void{
-  assert(context.prepaidGas >= 50*TGAS, "Not enough gas")
-  
   // Ask how many NEARs we have staked in the external pool
   let args:PoolArgs = new PoolArgs(context.contractName)
 
   let promise = ContractPromise.create(POOL, "get_account", args.encode(),
-                                       15*TGAS, u128.Zero)
+                                       5*TGAS, u128.Zero)
   let callbackPromise = promise.then(context.contractName, "_update_prize",
                                      "", 15*TGAS)
   callbackPromise.returnAsResult();
@@ -200,22 +202,48 @@ function stake_tickets_for(idx:i32, amount:u128):void{
   storage.set<u128>('pool_tickets', get_pool_tickets() + amount)
 }
 
+
 @nearBindgen
-class AmountArg{
-  constructor(public user:string, public amount:u128){}
+class IdxAmount{
+  constructor(public idx:i32, public amount:u128){}
 }
 
 export function deposit_and_stake():void{
   // Function called by users to buy tickets
-  assert(context.prepaidGas >= 100*TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 180*TGAS, "Not enough gas")
 
+  let amount:u128 = context.attachedDeposit
+  assert(amount > u128.Zero, "Please attach some NEARs")
+
+  // Get the total number of users
   const N:i32 = storage.getPrimitive<i32>('total_users', 0)
+  assert(N < MAX_USERS, "Maximum users reached, please user other pool")
 
+  // The guardian must deposit first
   if(N == 0){
     assert(context.predecessor == GUARDIAN, "Let the GUARDIAN deposit first")
   }
 
-  let amount: u128 = context.attachedDeposit 
+  // We add the users in Level Order so the tree is always balanced
+  let idx:i32 = 0
+  const user:string = context.predecessor
+
+  if(user_to_idx.contains(user)){
+    idx = user_to_idx.getSome(user)
+    logging.log("Staking on existing user: " + idx.toString())
+  }else{
+    idx = N
+
+    logging.log("Creating new user: " + idx.toString())
+    user_to_idx.set(user, idx)
+    idx_to_user.set(idx, user)
+    user_tickets.push(u128.Zero)
+    accum_weights.push(u128.Zero)
+    user_unstaked.push(u128.Zero)
+    user_withdraw_turn.push(0)
+
+    storage.set<i32>('total_users', N+1)
+  }
 
   // Deposit the money in the external pool
   // We add 100yn to cover the cost of staking in an external pool
@@ -224,13 +252,13 @@ export function deposit_and_stake():void{
   )
   
   // Create a callback to _deposit_and_stake
-  let ret_args:AmountArg = new AmountArg(context.predecessor, amount)
+  let args:IdxAmount = new IdxAmount(idx, amount)
   let callbackPromise = promise.then(context.contractName, "_deposit_and_stake",
-                                     ret_args.encode(), 30*TGAS)
+                                     args.encode(), 100*TGAS)
   callbackPromise.returnAsResult();
 }
 
-export function _deposit_and_stake(user:string, amount:u128):bool{
+export function _deposit_and_stake(idx:i32, amount:u128):bool{
   check_internal()
 
   let response = get_callback_result()
@@ -238,25 +266,6 @@ export function _deposit_and_stake(user:string, amount:u128):bool{
   // Assert the response is successful, so the user gets back the money if not
   assert(response.status == 1, "Error when interacting with external pool")
 
-  // We add the users in Level Order so the tree is always balanced
-  let idx:i32 = 0
-
-  if(user_to_idx.contains(user)){
-    idx = user_to_idx.getSome(user)
-    logging.log("Staking on existing user: " + idx.toString())
-  }else{
-    idx = storage.getPrimitive<i32>('total_users', 0)
-    storage.set<i32>('total_users', idx+1)
-    
-    logging.log("Creating user: " + idx.toString())
-    user_to_idx.set(user, idx)
-    idx_to_user.set(idx, user)
-    user_tickets.push(u128.Zero)
-    accum_weights.push(u128.Zero)
-    user_unstaked.push(u128.Zero)
-    user_withdraw_turn.push(0)
-  }
-  
   // Update binary tree and pool
   stake_tickets_for(idx, amount)
 
@@ -267,8 +276,6 @@ export function _deposit_and_stake(user:string, amount:u128):bool{
 // Unstake --------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 export function unstake(amount:u128):bool{
-  assert(context.prepaidGas >= 40*TGAS, "Not enough gas")
-
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
   // If we are interacting with the external pool, you will have to wait
@@ -307,14 +314,10 @@ export function unstake(amount:u128):bool{
 
 // Withdraw all ---------------------------------------------------------------
 // ----------------------------------------------------------------------------
-@nearBindgen
-class IntArgs{
-  constructor(public idx:i32, public amount:u128){}
-}
 
 export function withdraw_all():void{
   // Function called by the user to withdraw their staked NEARs
-  assert(context.prepaidGas >= 40*TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 60*TGAS, "Not enough gas")
 
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
@@ -329,12 +332,12 @@ export function withdraw_all():void{
   user_unstaked[idx] = u128.Zero
 
   // Send money to the user and callback _withdraw_all to see it succeded
-  let iargs:IntArgs = new IntArgs(idx, amount)
+  let args:IdxAmount = new IdxAmount(idx, amount)
 
   ContractPromiseBatch.create(context.predecessor)
   .transfer(amount)
   .then(context.contractName)
-  .function_call("_withdraw_all", iargs.encode(), u128.Zero, 10*TGAS)
+  .function_call("_withdraw_all", args.encode(), u128.Zero, 20*TGAS)
 }
 
 export function _withdraw_all(idx:i32, amount:u128):void{
@@ -408,6 +411,11 @@ export function _withdraw_external():bool{
 
 // Unstake external -----------------------------------------------------------
 // ----------------------------------------------------------------------------
+@nearBindgen
+class AmountArg{
+  constructor(public user:string, public amount:u128){}
+}
+
 function unstake_external():void{
   assert(context.prepaidGas >= 300*TGAS, "Not enough gas")
     
