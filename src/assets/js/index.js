@@ -133,7 +133,7 @@ window.withdraw = async function(){
     await withdraw() // throws error on fail, nothing on success
     get_and_display_user_info() 
   }catch{
-    $('.user-unstaked').html('try again later')
+    $('.user-unstaked').html('Try again later. If the error persists, login again')
   }
 }
 
