@@ -15,7 +15,6 @@ describe("u128 test", () => {
   })
 })
 
-
 describe("Random", () => {
   it("should be random", () => {
     let trials = 100
@@ -74,23 +73,43 @@ describe("Random", () => {
 describe("Binary Tree", () => {
   it("correctly stores/selects users", () => {
 
-    VMContext.setPredecessor_account_id(Context.contractName)
-
     const subjects:i32 = 10
-    for(let i=0; i < subjects; i++){
-      _deposit_and_stake(i.toString(), u128.from(i+1))
+    const balance:u128 = u128.from("200000000000000000000")
+
+    // The guardian deposits first
+    VMContext.setPredecessor_account_id('pooltest.testnet')
+    VMContext.setAccount_balance(balance)
+    VMContext.setAttached_deposit(u128.from(1))
+    VMContext.setPrepaid_gas(300000000000000)
+    deposit_and_stake()
+
+    // Poor man's callback simulation
+    VMContext.setPredecessor_account_id(Context.contractName)
+    _deposit_and_stake(0, u128.from(1))
+
+    for(let i=1; i < subjects; i++){
+
+      VMContext.setPredecessor_account_id(i.toString())
+      VMContext.setAccount_balance(balance)
+      VMContext.setAttached_deposit(u128.from(i+1))
+      VMContext.setPrepaid_gas(300000000000000)
+      deposit_and_stake()
+
+      // Poor man's callback simulation
+      VMContext.setPredecessor_account_id(Context.contractName)
+      _deposit_and_stake(i, u128.from(i+1))
     }
-    
+
     let expected_weights:Array<i32> = [55, 38, 16, 21, 15, 6, 7, 8, 9, 10]
-    
+
     for(let i:i32=0; i < subjects; i++){
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
     // Modify some of them
-    _deposit_and_stake("5", u128.from(2))
+    _deposit_and_stake(5, u128.from(2))
 
-    _deposit_and_stake("7", u128.from(1))
+    _deposit_and_stake(7, u128.from(1))
    
     expected_weights = [58, 39, 18, 22, 15, 8, 7, 9, 9, 10]
 
@@ -98,7 +117,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _deposit_and_stake("3", u128.from(3))
+    _deposit_and_stake(3, u128.from(3))
 
     expected_weights = [61, 42, 18, 25, 15, 8, 7, 9, 9, 10]
     
@@ -106,7 +125,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _deposit_and_stake("0", u128.from(1))
+    _deposit_and_stake(0, u128.from(1))
 
     expected_weights = [62, 42, 18, 25, 15, 8, 7, 9, 9, 10]
 
@@ -150,6 +169,7 @@ describe("Binary Tree", () => {
     expect(select_winner(u128.from(11))).toBe(7, "wrong winner")
   });
 })
+
 
 describe("Reserve Guardian", () => {
   it("the reserve guardian must be the first user", () => {
