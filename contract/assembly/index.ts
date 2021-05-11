@@ -154,7 +154,7 @@ export function update_prize():void{
   let args:PoolArgs = new PoolArgs(context.contractName)
 
   let promise = ContractPromise.create(POOL, "get_account", args.encode(),
-                                       5*TGAS, u128.Zero)
+                                       15*TGAS, u128.Zero)
   let callbackPromise = promise.then(context.contractName, "_update_prize",
                                      "", 15*TGAS)
   callbackPromise.returnAsResult();
