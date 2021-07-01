@@ -1,8 +1,6 @@
 import { storage, context, env, u128, ContractPromise, ContractPromiseBatch, logging } from "near-sdk-as"
-import {
-  user_to_idx, idx_to_user, user_tickets, accum_weights, user_unstaked,
-  user_withdraw_turn, winners, PoolInfo, User, Winner
-} from "./model"
+import { user_to_idx, idx_to_user, user_tickets, accum_weights, user_unstaked,
+         user_withdraw_turn, winners, PoolInfo, User, Winner } from "./model"
 
 import * as Prize from './prize'
 import * as External from './external'
@@ -10,6 +8,7 @@ import * as DAO from './dao'
 import * as Utils from './utils'
 import { TGAS } from "./constants"
 import * as Raffle from './raffle'
+
 
 // Total number of tickets in the pool
 export function get_tickets(): u128 {
@@ -30,10 +29,10 @@ export function get_info(): PoolInfo {
   const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
   const prize: u128 = Prize.pool_prize()
 
-  let reserve: u128 = u128.Zero
-  if (user_tickets.length > 0) { reserve = user_tickets[0] }
+  const reserve: u128 = (user_tickets.length > 0)? user_tickets[0] : u128.Zero
 
   const withdraw_external_ready: bool = External.can_withdraw_external()
+
   return new PoolInfo(tickets, reserve, prize, next_raffle, withdraw_external_ready)
 }
 
@@ -52,8 +51,7 @@ export function get_account(account_id: string): User {
   const now: u64 = External.get_current_turn()
 
   // Compute remaining time for withdraw to be ready
-  let remaining: u64 = 0
-  if (when > now) { remaining = when - now }
+  const remaining: u64 = (when > now)? when - now : 0
 
   const available: bool = unstaked > u128.Zero && now >= when
 
@@ -62,7 +60,6 @@ export function get_account(account_id: string): User {
 
 
 // Deposit and stake ----------------------------------------------------------
-// ----------------------------------------------------------------------------
 function stake_tickets_for(idx: i32, amount: u128): void {
   // Add amount of tickets to the user in the position idx  
   user_tickets[idx] = user_tickets[idx] + amount
@@ -135,8 +132,6 @@ export function deposit_and_stake(): void {
 }
 
 export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
-  Utils.check_internal()
-
   let response = Utils.get_callback_result()
 
   // Assert the response is successful, so the user gets back the money if not
@@ -150,7 +145,6 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
 
 
 // Unstake --------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 export function unstake(amount: u128): bool {
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
@@ -185,7 +179,6 @@ export function unstake(amount: u128): bool {
 
 
 // Withdraw all ---------------------------------------------------------------
-// ----------------------------------------------------------------------------
 export function withdraw_all(): void {
   // Function called by the user to withdraw their staked NEARs
   assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
@@ -202,7 +195,7 @@ export function withdraw_all(): void {
   // Set user's unstake amount to 0 to avoid reentracy attacks
   user_unstaked[idx] = u128.Zero
 
-  // Send money to the user and callback _withdraw_all to see it succeded
+  // Send money to the user and callback to see it succeded
   let args: IdxAmount = new IdxAmount(idx, amount)
 
   ContractPromiseBatch.create(context.predecessor)
@@ -212,8 +205,6 @@ export function withdraw_all(): void {
 }
 
 export function withdraw_all_callback(idx: i32, amount: u128): void {
-  Utils.check_internal()
-
   let response = Utils.get_callback_result()
 
   if (response.status == 1) {
@@ -225,7 +216,6 @@ export function withdraw_all_callback(idx: i32, amount: u128): void {
 
 
 // Raffle ---------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 export function raffle(): i32 {
   // Function to make the raffle
   let now: u64 = env.block_timestamp()
@@ -265,4 +255,17 @@ export function raffle(): i32 {
   let winner_name: string = idx_to_user.getSome(winner)
   winners.push(new Winner(winner_name, user_prize))
   return winner
+}
+
+export function get_winners(): Array<Winner> {
+  // Returns the last 10 winners
+  let size: i32 = winners.length
+
+  let lower: i32 = 0
+  if (size >= 10) { lower = size - 10 }
+
+  let to_return: Array<Winner> = new Array<Winner>()
+  for (let i: i32 = lower; i < size; i++) { to_return.push(winners[i]) }
+
+  return to_return
 }

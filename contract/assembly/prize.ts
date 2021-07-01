@@ -26,15 +26,16 @@ export function update_prize(): void {
   // Ask how many NEARs we have staked in the external pool
   let args: PoolArgs = new PoolArgs(context.contractName)
 
-  let promise = ContractPromise.create(DAO.get_external_pool(), "get_account",
-    args.encode(), 15 * TGAS, u128.Zero)
-  let callbackPromise = promise.then(context.contractName, "_update_prize",
-    "", 15 * TGAS)
+  let promise = ContractPromise.create(
+    DAO.get_external_pool(), "get_account", args.encode(), 15 * TGAS, u128.Zero
+  )
+  let callbackPromise = promise.then(
+    context.contractName, "update_prize_callback", "", 15 * TGAS
+  )
   callbackPromise.returnAsResult();
 }
 
-export function _update_prize(): bool {
-  Utils.check_internal()
+export function update_prize_callback(): bool {
   let info = Utils.get_callback_result()
 
   if (info.status != 1) {

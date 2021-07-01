@@ -1,4 +1,4 @@
-import { u128 } from "near-sdk-as";
+import { math, u128 } from "near-sdk-as";
 import { accum_weights, user_tickets } from './model'
 
 

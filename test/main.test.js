@@ -5,9 +5,9 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
-    user_A = 'test-account-1620312539481-8279000'
-    user_B = 'test-account-1620312528246-8816479'
-    user_C = 'test-account-1620312496860-5528612'
+    user_A = 'test-account-1625088444921-3359490' 
+    user_B = 'test-account-1625088423773-5983746'
+    user_C = 'test-account-1625088405590-3197214'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -18,8 +18,9 @@ describe('PoolParty', function () {
         changeMethods: ['get_pool_info', 'deposit_and_stake', 'unstake',
                         'withdraw_all', 'update_prize', 'interact_external',
                         'get_pool_tickets',
-                        'get_user_tickets', '_deposit_and_stake',
-                        '_unstake_external', '_withdraw_external', '_withdraw_all'],
+                        'get_user_tickets', 'deposit_and_stake_callback',
+                        'unstake_external_callback', 'withdraw_external_callback',
+                        'withdraw_all_callback', "update_prize_callback"],
         sender: user
       })
     }
@@ -274,20 +275,24 @@ describe('PoolParty', function () {
       await unstake(1, contract_C)
     })
 
-    it("ERROR: cannot access method _deposit_and_stake", async ()=>{
-      await contract_A._deposit_and_stake({user:user_A, amount:'1'})  
+    it("ERROR: cannot access method deposit_and_stake_callback", async ()=>{
+      await contract_A.deposit_and_stake_callback({idx:1, amount:'1'})  
     })
 
-    it("ERROR: cannot access method _unstake_external", async ()=>{
-      await contract_A._unstake_external({user:user_A, amount:"100"})  
+    it("ERROR: cannot access method unstake_external_callback", async ()=>{
+      await contract_A.unstake_external_callback({user:user_A, amount:"100"})  
     })
 
     it("ERROR: cannot access method _withdraw_exteral", async ()=>{
-      await contract_A._withdraw_external()  
+      await contract_A.withdraw_external_callback()  
     })
 
-    it("ERROR: cannot access method _withdraw_all", async ()=>{
-      await contract_A._withdraw_all({idx:0, amount:'1'})  
+    it("ERROR: cannot access method withdraw_all_callback", async ()=>{
+      await contract_A.withdraw_all_callback({idx:0, amount:'1'})  
+    })
+
+    it("ERROR: cannot access method update_prize_callback", async ()=>{
+      await contract_A.update_prize_callback()  
     })
 
   });

@@ -1,12 +1,9 @@
 import { context, ContractPromise, ContractPromiseResult } from "near-sdk-as";
 
-
-export function check_internal(): void {
+export function get_callback_result(): ContractPromiseResult {
   // Check that callback functions are called by this contract
   assert(context.predecessor == context.contractName, "Just don't")
-}
 
-export function get_callback_result(): ContractPromiseResult {
   // Return the result from the external pool
   let results = ContractPromise.getResults()
 
