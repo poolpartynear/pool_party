@@ -10,10 +10,10 @@ let RAFFLE_WAIT: u64 = 86400000000000
 let POOL_FEES: u128 = u128.from(20)
 
 // The first guardian
-let GUARDIAN: string = 'pooltest.testnet'
+let GUARDIAN: string = 'pooltest.testnet' // "test-account-1625088444921-3359490"
 
 // The external pool
-const POOL: string = "blazenet.pool.f863973.m0"
+const POOL: string = "blazenet.pool.f863973.m0" // 'test-account-1625088622351-4194423'
 
 // If the tree gets too high (>14 levels) traversing it gets expensive,
 // lets cap the max number of users, so traversing the tree is at max 90TGAS
