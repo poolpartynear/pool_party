@@ -4,7 +4,6 @@ import { idx_to_user, user_tickets, accum_weights, winners, PoolInfo, User, Winn
 import * as Pool from "./pool"
 import * as External from "./external"
 import * as DAO from './dao'
-import * as Raffle from './raffle'
 import * as Prize from "./prize"
 
 
@@ -84,6 +83,40 @@ export function get_user_by_id(idx: i32): string {
   return ""
 }
 
-export function get_guardian(): string{
+
+// DAO
+export function get_pool_fees(): u128{
+  return DAO.get_pool_fees()
+}
+
+export function change_pool_fees(fees:u128): bool{
+  return DAO.change_pool_fees(fees);
+}
+
+export function get_raffle_wait(): u64{
+  return DAO.get_raffle_wait()
+}
+
+export function change_time_between_raffles(time:u64): bool{
+  return DAO.change_time_between_raffles(time);
+}
+
+export function get_max_users(): i32{
+  return DAO.get_max_users()
+}
+
+export function change_max_users(max_users:i32): bool{
+  return DAO.change_max_users(max_users);
+}
+
+export function get_guardian():string{
   return DAO.get_guardian()
+}
+
+export function propose_new_guardian(guardian:string): bool{
+  return DAO.propose_new_guardian(guardian)
+}
+
+export function accept_being_guardian():bool{
+  return DAO.accept_being_guardian()
 }

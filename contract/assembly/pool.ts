@@ -239,7 +239,7 @@ export function raffle(): i32 {
   let prize: u128 = Prize.pool_prize()
 
   // A part goes to the reserve
-  let reserve: u128 = prize / DAO.get_pool_fees()
+  let reserve: u128 = (prize * DAO.get_pool_fees()) / u128.from(100)
   stake_tickets_for(0, reserve)
 
   // We give most to the user

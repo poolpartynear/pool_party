@@ -5,6 +5,7 @@ describe('PoolParty', function () {
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
   beforeAll(async function () {
+    // NOTE: USER_A is GUARDIAN, USER_B is DAO
     user_A = 'test-account-1625088444921-3359490' 
     user_B = 'test-account-1625088423773-5983746'
     user_C = 'test-account-1625088405590-3197214'
@@ -20,7 +21,11 @@ describe('PoolParty', function () {
                         'get_pool_tickets',
                         'get_user_tickets', 'deposit_and_stake_callback',
                         'unstake_external_callback', 'withdraw_external_callback',
-                        'withdraw_all_callback', "update_prize_callback"],
+                        'withdraw_all_callback', "update_prize_callback",
+                        'get_pool_fees', 'change_pool_fees', 'get_raffle_wait',
+                        'change_time_between_raffles', 'get_max_users',
+                        'change_max_users'
+                      ],
         sender: user
       })
     }
@@ -84,6 +89,16 @@ describe('PoolParty', function () {
       info.total_staked = parseFloat(nearAPI.utils.format.formatNearAmount(info.total_staked))
       info.prize = parseFloat(nearAPI.utils.format.formatNearAmount(info.prize))
       return info  
+    }
+
+    get_pool_fees = async function(contract){
+      let fees = await contract.get_pool_fees()
+      return 100 / parseFloat(fees)
+    }
+
+    change_pool_fees = async function(fees, contract){
+      amount = (100/ fees).toString()
+      let result = await contract.change_pool_fees({fees})
     }
 
     raffle = async function(contract=contract_A){
@@ -294,6 +309,5 @@ describe('PoolParty', function () {
     it("ERROR: cannot access method update_prize_callback", async ()=>{
       await contract_A.update_prize_callback()  
     })
-
   });
 });
