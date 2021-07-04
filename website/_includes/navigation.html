@@ -1,0 +1,24 @@
+<header id="header" class="fixed-top d-flex align-items-center header-transparent">
+	<div class="container d-flex align-items-center justify-content-between">
+
+		<div class="logo"></div>
+
+		<nav class="nav-menu">
+			<ul>
+				{% for item in site.data.navigation %}
+				<li>
+					<a class="nav-item nav-link" href="{{item.link}}">{{ item.name }}</a>
+				</li>
+				{% endfor %}
+				<li id="login-btn" class="logged-out"><a onclick="login()" type="button" href="#">Login</a></li>
+				<li class="drop-down dropdown-header logged-in">
+					<a href="#" id="account"><i class="fas fa-caret-down"></i></a>
+					<ul>
+						<li><a onclick="logout()" type="button">Logout</a></li>
+					</ul>
+				</li>
+			</ul>
+		</nav><!-- .nav-menu -->
+
+	</div>
+</header>

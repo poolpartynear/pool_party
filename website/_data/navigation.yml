@@ -1,0 +1,7 @@
+- name: Home
+  link: /
+- name: How It Works
+  link: /how-it-works.html
+- name: Vote (DAO)
+  link: /dao.html
+
