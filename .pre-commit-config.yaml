@@ -1,0 +1,17 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: local
+    hooks:
+      - id: do-not-commit-testing
+        name: "Do not commit testing addresses"
+        description: "Tests that we didn't commit testing addresses"
+        entry: ./test/hooks/do-not-commit-testing-addresses
+        language: script
+        files: 'dao.ts'
+      - id: do-not-commit-testing-2
+        name: "Do not commit commented line"
+        description: "Tests that we didn't let a line in external.ts commented"
+        entry: ./test/hooks/do-not-commit-commented-external
+        language: script
+        files: 'external.ts'
