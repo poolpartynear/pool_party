@@ -90,7 +90,7 @@ export function deposit_and_stake(): void {
 
   // Get the total number of users
   const N: i32 = storage.getPrimitive<i32>('total_users', 0)
-  assert(N < DAO.get_max_users(), "Maximum users reached, please user other pool")
+  assert(N < (DAO.get_max_users() as i32), "Maximum users reached, please user other pool")
 
   // The guardian must deposit first
   if (N == 0) {

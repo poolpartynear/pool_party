@@ -21,10 +21,7 @@ describe('PoolParty', function () {
                         'get_pool_tickets',
                         'get_user_tickets', 'deposit_and_stake_callback',
                         'unstake_external_callback', 'withdraw_external_callback',
-                        'withdraw_all_callback', "update_prize_callback",
-                        'get_pool_fees', 'change_pool_fees', 'get_raffle_wait',
-                        'change_time_between_raffles', 'get_max_users',
-                        'change_max_users'
+                        'withdraw_all_callback', "update_prize_callback"
                       ],
         sender: user
       })
@@ -278,8 +275,45 @@ describe('PoolParty', function () {
       expect(account.available_when).toBe(2)
     })
 
-    it("can raffle", async function(){
-      await raffle()
+    it("on a raffle, the reserve gets a 5% and the winner the rest", async function(){
+      let current_balances = [9, 11, 0.122456]
+      let prize = 10+12.123+0.123456
+      let winner = await raffle()
+
+      let reserve_prize = prize * 0.05
+      let winner_prize = prize - reserve_prize
+
+      balance_A = await get_account(user_A)
+      expect(balance_A.staked_balance).toBeCloseTo(current_balances[0] + reserve_prize)
+
+      users = [user_A, user_B, user_C]
+
+      for(i=1; i<3; i++){
+        expected = current_balances[i]
+        expected += (i == winner)? winner_prize : 0
+        user_balance = await get_account(users[i])
+        expect(user_balance.staked_balance).toBeCloseTo(expected)
+      }
+    })
+
+    it("can withdraw all correctly", async function(){
+      
+      balance = await get_account_balance(user_A)
+      
+      await interact_external(contract_B)
+      await withdraw_all(contract_A)
+
+      new_balance = await get_account_balance(user_A)
+      expect(Math.abs(new_balance.total - balance.total)).toBeLessThan(1)
+
+      account = await get_account(user_A)
+      expect(account.staked_balance).toBe(10.1123228)
+      expect(account.unstaked_balance).toBe(0)
+      expect(account.available_when).toBe(0)
+
+      account = await get_account(user_C)
+      expect(account.unstaked_balance).toBe(0.001)
+      expect(account.available_when).toBe(1)
     })
 
     it("ERROR: cannot raffle again, it has to wait", async function(){

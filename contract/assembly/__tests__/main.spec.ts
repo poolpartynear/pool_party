@@ -1,8 +1,9 @@
-import { random_u128, _deposit_and_stake, deposit_and_stake, unstake,
-         get_user_tickets, get_accum_weights, select_winner,
-         get_account } from '..';
-import { storage, Context, u128, logging, VMContext,
-         ContractPromiseResult } from "near-sdk-as";
+import { deposit_and_stake_callback, deposit_and_stake, unstake,
+         get_accum_weights } from '..';
+
+import * as Raffle from '../raffle'
+
+import { Context, u128, VMContext } from "near-sdk-as";
 
 
 describe("u128 test", () => {
@@ -13,6 +14,11 @@ describe("u128 test", () => {
       expect(div).toBe(u128.Zero)
     }
   })
+
+  it("underflow raises error", () => {
+    expect(()=>{u128.Zero - u128.One}).toThrow()
+  })
+
 })
 
 describe("Random", () => {
@@ -24,7 +30,7 @@ describe("Random", () => {
     for(let i=0; i < max; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
-      let rnd:u128 = random_u128(u128.Zero, u128.from(max))
+      let rnd:u128 = Raffle.random_u128(u128.Zero, u128.from(max))
 
       expect(rnd >= u128.Zero && u128.from(max) > rnd)
 
@@ -50,7 +56,7 @@ describe("Random", () => {
     for(let i=0; i < total; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
-      let rnd:u128 = random_u128(u128.from(min), u128.from(max))
+      let rnd:u128 = Raffle.random_u128(u128.from(min), u128.from(max))
 
       expect(rnd >= u128.from(min) && u128.from(max) > rnd)
 
@@ -85,7 +91,7 @@ describe("Binary Tree", () => {
 
     // Poor man's callback simulation
     VMContext.setPredecessor_account_id(Context.contractName)
-    _deposit_and_stake(0, u128.from(1))
+    deposit_and_stake_callback(0, u128.from(1))
 
     for(let i=1; i < subjects; i++){
 
@@ -97,7 +103,7 @@ describe("Binary Tree", () => {
 
       // Poor man's callback simulation
       VMContext.setPredecessor_account_id(Context.contractName)
-      _deposit_and_stake(i, u128.from(i+1))
+      deposit_and_stake_callback(i, u128.from(i+1))
     }
 
     let expected_weights:Array<i32> = [55, 38, 16, 21, 15, 6, 7, 8, 9, 10]
@@ -107,9 +113,9 @@ describe("Binary Tree", () => {
     }
 
     // Modify some of them
-    _deposit_and_stake(5, u128.from(2))
+    deposit_and_stake_callback(5, u128.from(2))
 
-    _deposit_and_stake(7, u128.from(1))
+    deposit_and_stake_callback(7, u128.from(1))
    
     expected_weights = [58, 39, 18, 22, 15, 8, 7, 9, 9, 10]
 
@@ -117,7 +123,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _deposit_and_stake(3, u128.from(3))
+    deposit_and_stake_callback(3, u128.from(3))
 
     expected_weights = [61, 42, 18, 25, 15, 8, 7, 9, 9, 10]
     
@@ -125,7 +131,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    _deposit_and_stake(0, u128.from(1))
+    deposit_and_stake_callback(0, u128.from(1))
 
     expected_weights = [62, 42, 18, 25, 15, 8, 7, 9, 9, 10]
 
@@ -153,20 +159,20 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    expect(select_winner(u128.from(0))).toBe(0, "wrong winner") 
-    expect(select_winner(u128.from(1))).toBe(0, "wrong winner") 
-    expect(select_winner(u128.from(2))).toBe(1, "wrong winner") 
-    expect(select_winner(u128.from(3))).toBe(1, "wrong winner") 
-    expect(select_winner(u128.from(40))).toBe(2, "wrong winner")
-    expect(select_winner(u128.from(41))).toBe(2, "wrong winner")
-    expect(select_winner(u128.from(4))).toBe(3, "wrong winner") 
-    expect(select_winner(u128.from(9))).toBe(3, "wrong winner") 
-    expect(select_winner(u128.from(44))).toBe(5, "wrong winner")
-    expect(select_winner(u128.from(50))).toBe(5, "wrong winner")
-    expect(select_winner(u128.from(51))).toBe(6, "wrong winner")
-    expect(select_winner(u128.from(52))).toBe(6, "wrong winner")
-    expect(select_winner(u128.from(57))).toBe(6, "wrong winner")
-    expect(select_winner(u128.from(11))).toBe(7, "wrong winner")
+    expect(Raffle.select_winner(u128.from(0))).toBe(0, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(1))).toBe(0, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(2))).toBe(1, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(3))).toBe(1, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(40))).toBe(2, "wrong winner")
+    expect(Raffle.select_winner(u128.from(41))).toBe(2, "wrong winner")
+    expect(Raffle.select_winner(u128.from(4))).toBe(3, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(9))).toBe(3, "wrong winner") 
+    expect(Raffle.select_winner(u128.from(44))).toBe(5, "wrong winner")
+    expect(Raffle.select_winner(u128.from(50))).toBe(5, "wrong winner")
+    expect(Raffle.select_winner(u128.from(51))).toBe(6, "wrong winner")
+    expect(Raffle.select_winner(u128.from(52))).toBe(6, "wrong winner")
+    expect(Raffle.select_winner(u128.from(57))).toBe(6, "wrong winner")
+    expect(Raffle.select_winner(u128.from(11))).toBe(7, "wrong winner")
   });
 })
 

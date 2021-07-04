@@ -31,11 +31,11 @@ describe('PoolParty', function () {
 
     get_pool_fees = async function(contract){
       let fees = await contract.get_pool_fees()
-      return 100 / parseFloat(fees)
+      return parseFloat(fees)
     }
 
     change_pool_fees = async function(fees, contract){
-      fees = (100/ fees).toString()
+      fees = fees.toString()
       let result = await contract.change_pool_fees({fees})
     }
   });
