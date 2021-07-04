@@ -63,7 +63,6 @@ export function change_time_between_raffles(new_wait:u64): bool{
 
 export function change_pool_fees(new_fees:u128): bool{
   fail_if_not_dao()
-  assert(new_fees >= u128.from(0), "Fee must be between 0 - 100")
   assert(new_fees <= u128.from(100), "Fee must be between 0 - 100")
   storage.set<u128>('dao_pool_fees', new_fees)
   return true
