@@ -28,7 +28,7 @@ async function get_and_display_pool_info(){
 }
 
 async function login_flow(){
-  $('#account').html(window.walletAccount.accountId+' <i class="fas fa-caret-down"></i>')
+  $('#account').html(window.walletAccount.accountId)
   get_and_display_user_info()
 
   if(pool.next_prize_tmstmp < Date.now() && pool.total_staked > 0){
