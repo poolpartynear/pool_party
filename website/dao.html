@@ -1,0 +1,49 @@
+---
+layout: default
+title: Pool Party - Home
+js_file: dao.js
+---
+
+<section id="hero">
+  <div class="container">
+    <div class="row justify-content-between">
+      <h1>Vote on how the <span>Pool</span> works</h1>
+      <h2 class='mb-0'>Decide on how the prizes are distributed and used </h2>
+    </div>
+  </div>
+
+  {% include waves.html %}
+</section>
+<!-- End Hero -->
+
+<main id="main">
+  <!-- ======= Details Section ======= -->
+  <section id="details" class="details">
+    <div class="container">
+      <div class="row content">
+        <div class="col-md-4 text-center" data-aos="fade-right">
+          <ul id="proposals"></div>
+        </div>
+        <div class="col-md-8 p-4" data-aos="fade-up">
+          <h3 id="p-title">Prop Title</h3>
+          <p> Description: <span id="p-description"> Description </span> </p>
+          <br>
+          <p> Proposed by: <span id="p-proposer"> - </span> </p>
+          <br>
+          <p> Submited on <span id="p-time"></span></p>
+          <br>
+          <p> Votes: <ul id="p-votes"></ul></p>
+
+          <div class="text-center text-lg-start">
+            <a onclick="login()" href="#" class="logged-out btn-get-started scrollto">Login to Vote</a>
+          </div>
+
+          <button onclick="vote('VoteAccept')"> Approve </button>
+          <button onclick="vote('VoteReject')"> Reject </button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End Details Section -->
+
+</main>

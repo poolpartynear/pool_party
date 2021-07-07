@@ -1,14 +1,9 @@
-import {getConfig} from './config.js'
+import {getConfig, floor} from './aux.js'
+export {floor} from './aux.js'
+
 const nearConfig = getConfig('testnet')
 
 window.nearApi = nearApi
-
-export function floor(value, decimals=2){
-  value = parseFloat(String(value).replace(',', ''))
-  let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
-  if(isNaN(number)){number = 0}
-  return number
-}
 
 export function login() {
   walletConnection.requestSignIn(nearConfig.contractName, 'Pool Party');

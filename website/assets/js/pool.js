@@ -1,6 +1,7 @@
 import {initNEAR, login, logout, get_pool_info, get_account,
         stake, unstake, withdraw, raffle, update_prize,
-        get_winners, floor, interact_external} from './blockchain.js'
+        get_winners, floor, interact_external} from './blockchain/pool.js'
+
 
 async function get_and_display_pool_info(){
   console.log("Getting information from the pool - VIEW")
@@ -136,6 +137,11 @@ window.withdraw = async function(){
     $('.user-unstaked').html('Try again later. If the error persists, login again')
   }
 }
+
+
+
+
+// LOGIN - LOGOUT
 
 window.onload = function(){
   window.nearInitPromise = initNEAR()

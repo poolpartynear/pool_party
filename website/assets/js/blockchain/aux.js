@@ -1,5 +1,12 @@
 const CONTRACT_NAME = 'dev-1625400784308-8795187'
 
+export function floor(value, decimals=2){
+  value = parseFloat(String(value).replace(',', ''))
+  let number = Number(Math.floor(value+'e'+decimals)+'e-'+decimals)
+  if(isNaN(number)){number = 0}
+  return number
+}
+
 export function getConfig(env) {
   switch (env) {
 
@@ -9,6 +16,7 @@ export function getConfig(env) {
       networkId: 'mainnet',
       nodeUrl: 'https://rpc.mainnet.near.org',
       contractName: CONTRACT_NAME,
+      DAOaddress: 'genesis.dao.poolparty.near',
       walletUrl: 'https://wallet.near.org',
       helperUrl: 'https://helper.mainnet.near.org',
       explorerUrl: 'https://explorer.mainnet.near.org',
@@ -19,6 +27,7 @@ export function getConfig(env) {
       networkId: 'testnet',
       nodeUrl: 'https://rpc.testnet.near.org',
       contractName: CONTRACT_NAME,
+      DAOaddress: 'genesis.dao.pooltest.testnet',
       walletUrl: 'https://wallet.testnet.near.org',
       helperUrl: 'https://helper.testnet.near.org',
       explorerUrl: 'https://explorer.testnet.near.org',
