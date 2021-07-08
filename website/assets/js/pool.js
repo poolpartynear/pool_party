@@ -139,8 +139,6 @@ window.withdraw = async function(){
 }
 
 
-
-
 // LOGIN - LOGOUT
 
 window.onload = function(){
@@ -151,4 +149,3 @@ window.onload = function(){
 
 window.login = login
 window.logout = logout
-

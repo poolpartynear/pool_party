@@ -62,11 +62,6 @@ export async function act_proposal(proposal_id, action){
 }
 
 
-
-export async function get_council(){
-  return await contract.get_council();
-}
-
 export async function get_proposals(from_index, limit){
   let info = await contract.get_proposals({from_index:from_index, limit:limit})
 
