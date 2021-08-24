@@ -1,19 +1,19 @@
 import { u128, context, storage } from "near-sdk-as";
 
-// The DAO in charge of changing these parameters
-const DAO: string = "dao.pooltest.testnet"
-
 // The raffle happens once per day
 const RAFFLE_WAIT: u64 = 86400000000000
 
 // We take a 5% of the raffle
 const POOL_FEES: u128 = u128.from(5)
 
+// The external pool
+const POOL: string = "blazenet.pool.f863973.m0" 
+
 // The first guardian
 const GUARDIAN: string = 'pooltest.testnet'
 
-// The external pool
-const POOL: string = "blazenet.pool.f863973.m0" 
+// The DAO in charge of changing these parameters
+const DAO: string = "dao.pooltest.testnet"
 
 // If the tree gets too high (>12 levels) traversing it gets expensive,
 // lets cap the max number of users, so traversing the tree is at max 90TGAS
