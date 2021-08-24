@@ -60,6 +60,21 @@ export function get_account(account_id: string): User {
 
 
 // Deposit and stake ----------------------------------------------------------
+function add_new_user(user: string): i32{
+  const N: i32 = storage.getPrimitive<i32>('total_users', 0)
+
+  user_to_idx.set(user, N)
+  idx_to_user.set(N, user)
+  user_tickets.push(u128.Zero)
+  accum_weights.push(u128.Zero)
+  user_unstaked.push(u128.Zero)
+  user_withdraw_turn.push(0)
+
+  storage.set<i32>('total_users', N + 1)
+
+  return N;
+}
+
 function stake_tickets_for(idx: i32, amount: u128): void {
   // Add amount of tickets to the user in the position idx  
   user_tickets[idx] = user_tickets[idx] + amount
@@ -103,19 +118,10 @@ export function deposit_and_stake(): void {
 
   if (user_to_idx.contains(user)) {
     idx = user_to_idx.getSome(user)
-    logging.log("Staking on existing user: " + idx.toString())
+    logging.log(`Staking on existing user: ${idx}`)
   } else {
-    idx = N
-
-    logging.log("Creating new user: " + idx.toString())
-    user_to_idx.set(user, idx)
-    idx_to_user.set(idx, user)
-    user_tickets.push(u128.Zero)
-    accum_weights.push(u128.Zero)
-    user_unstaked.push(u128.Zero)
-    user_withdraw_turn.push(0)
-
-    storage.set<i32>('total_users', N + 1)
+    idx = add_new_user(user);
+    logging.log(`Created new user: ${idx}`)
   }
 
   // Deposit the money in the external pool
@@ -126,21 +132,34 @@ export function deposit_and_stake(): void {
 
   // Create a callback to _deposit_and_stake
   let args: IdxAmount = new IdxAmount(idx, amount)
-  let callbackPromise = promise.then(context.contractName, "deposit_and_stake_callback",
-    args.encode(), 100 * TGAS)
+
+  let callbackPromise = promise.then(
+    context.contractName,
+    "deposit_and_stake_callback",
+    args.encode(),
+    100 * TGAS
+  )
+
   callbackPromise.returnAsResult();
 }
 
 export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
   let response = Utils.get_callback_result()
 
-  // Assert the response is successful, so the user gets back the money if not
-  assert(response.status == 1, "Error when interacting with external pool")
+  if(response.status == 1){
+    // It worked, stake tickets for the user
+    stake_tickets_for(idx, amount)
+    return true
+  }else{
+    // It failed, return their money
+    logging.log("Failed attempt to deposit in the pool, returning money to the user")
+    let account = idx_to_user.getSome(idx)
+    ContractPromiseBatch.create(account).transfer(amount)
+    return false
+  }
 
-  // Update binary tree and pool
-  stake_tickets_for(idx, amount)
 
-  return true
+
 }
 
 
@@ -154,7 +173,7 @@ export function unstake(amount: u128): bool {
   // Check if it has enough money
   assert(amount <= user_tickets[idx], "Not enough money")
 
-  logging.log("Unstaking " + amount.toString() + " from user " + idx.toString())
+  logging.log(`Unstaking ${amount} from user ${idx}`)
 
   // add to the amount we will unstake from external next time
   External.set_to_unstake(External.get_to_unstake() + amount)
@@ -208,7 +227,7 @@ export function withdraw_all_callback(idx: i32, amount: u128): void {
   let response = Utils.get_callback_result()
 
   if (response.status == 1) {
-    logging.log("Sent " + amount.toString() + " to " + idx_to_user.getSome(idx))
+    logging.log(`Sent ${amount} to ${idx_to_user.getSome(idx)}`)
   } else {
     user_unstaked[idx] = amount  // It failed, add unstaked back to user
   }
@@ -246,7 +265,7 @@ export function raffle(): i32 {
   let user_prize: u128 = prize - reserve
   stake_tickets_for(winner, user_prize)
 
-  logging.log("Reserve: " + reserve.toString() + " Prize: " + user_prize.toString())
+  logging.log(`Reserve: ${reserve} - Prize: ${user_prize}`)
 
   // Set next raffle time
   storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_raffle_wait())
@@ -268,4 +287,28 @@ export function get_winners(): Array<Winner> {
   for (let i: i32 = lower; i < size; i++) { to_return.push(winners[i]) }
 
   return to_return
+}
+
+
+// The TOKEN contract can give part of the reserve to a user
+export function give_from_reserve(to: string, amount: u128): void {
+  assert(context.prepaidGas >= 120 * TGAS, "This function requires at least 90TGAS")
+  assert(context.predecessor == DAO.get_guardian(), "Only the GUARDIAN can use the reserve")
+  assert(user_tickets[0] >= amount, "Not enough tickets in the reserve")
+
+  let idx = 0
+  if (user_to_idx.contains(to)) {
+    idx = user_to_idx.getSome(to)
+    logging.log(`Staking on existing user: ${idx}`)
+  } else {
+    idx = add_new_user(to);
+    logging.log(`Created new user: ${idx}`)
+  }
+
+  // Remove from reserve
+  user_tickets[0] -= amount
+  accum_weights[0] -= amount
+
+  // Give to the user -> updating the tree can cost up to 90 TGAS
+  stake_tickets_for(idx, amount)
 }

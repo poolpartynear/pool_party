@@ -120,3 +120,8 @@ export function propose_new_guardian(guardian:string): bool{
 export function accept_being_guardian():bool{
   return DAO.accept_being_guardian()
 }
+
+// TOKEN
+export function give_from_reserve(to: string, amount: u128): void {
+  Pool.give_from_reserve(to, amount)
+}

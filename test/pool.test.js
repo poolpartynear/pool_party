@@ -6,9 +6,9 @@ describe('PoolParty', function () {
 
   beforeAll(async function () {
     // NOTE: USER_A is GUARDIAN, USER_B is DAO
-    user_A = 'test-account-1625088444921-3359490' 
-    user_B = 'test-account-1625088423773-5983746'
-    user_C = 'test-account-1625088405590-3197214'
+    user_A = 'test-account-1629845366283-2739389' 
+    user_B = 'test-account-1629845108929-9775276'
+    user_C = 'test-account-1629844942492-2270535'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;

@@ -1,4 +1,4 @@
-describe('PoolParty', function () {
+describe('DAO-PoolParty', function () {
   let user_A, user_B, user_C
   let contract_A, contract_B, contract_C
 
@@ -6,9 +6,9 @@ describe('PoolParty', function () {
 
   beforeAll(async function () {
     // NOTE: USER_A is GUARDIAN, USER_B is DAO
-    user_A = 'test-account-1625088444921-3359490' 
-    user_B = 'test-account-1625088423773-5983746'
-    user_C = 'test-account-1625088405590-3197214'
+    user_A = 'test-account-1629660979115-2253757' 
+    user_B = 'test-account-1629660960640-7514748'
+    user_C = 'test-account-1629660925295-7191958'
 
     const near = await nearlib.connect(nearConfig);
     const accountId = nearConfig.contractName;
@@ -55,11 +55,11 @@ describe('PoolParty', function () {
       time = await contract_A.get_raffle_wait()
       expect(time).toBe("86400000000000")
 
-      let new_wait = "85000000000000"
+      let new_wait = "0"
       await contract_B.change_time_between_raffles({time: new_wait})
 
       time = await contract_A.get_raffle_wait()
-      expect(time).toBe("85000000000000")
+      expect(time).toBe("0")
     })
 
     it("the DAO can change the max number of users", async function(){
