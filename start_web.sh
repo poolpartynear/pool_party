@@ -5,4 +5,4 @@ sed -i "1s/.*/$fline/" ../website/assets/js/blockchain/aux.js
 
 # Start website
 cd ../website
-bundle exec jekyll serve --livereload -o
+./start_web

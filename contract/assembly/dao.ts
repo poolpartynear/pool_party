@@ -10,7 +10,7 @@ const POOL_FEES: u128 = u128.from(5)
 const POOL: string = "blazenet.pool.f863973.m0" 
 
 // The first guardian
-const GUARDIAN: string = 'pooltest.testnet'
+const GUARDIAN: string = 'token.pooltest.testnet'
 
 // The DAO in charge of changing these parameters
 const DAO: string = "dao.pooltest.testnet"
