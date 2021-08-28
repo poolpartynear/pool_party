@@ -1,4 +1,5 @@
 import { u128, context, storage } from "near-sdk-as";
+import { user_to_idx, idx_to_user } from "./model";
 
 // The raffle happens once per day
 const RAFFLE_WAIT: u64 = 86400000000000
@@ -76,9 +77,17 @@ export function propose_new_guardian(new_guardian:string): bool{
 
 export function accept_being_guardian(): bool{
   const PROPOSED = storage.getPrimitive<string>('dao_proposed_guardian', GUARDIAN)
+
   assert(context.predecessor == PROPOSED,
          "Only the proposed guardian can accept to be guardian")
 
+  const new_guardian = context.predecessor
+  assert(!user_to_idx.contains(new_guardian),
+         "For simplicity, we don't allow an existing user to be guardian")
+
   storage.set<string>("dao_guardian", PROPOSED)
+  user_to_idx.set(new_guardian, 0)
+  idx_to_user.set(0, new_guardian)
+
   return true
 }
