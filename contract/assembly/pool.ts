@@ -118,10 +118,10 @@ export function deposit_and_stake(): void {
 
   if (user_to_idx.contains(user)) {
     idx = user_to_idx.getSome(user)
-    logging.log(`Staking on existing user: ${idx}`)
+    logging.log(`Staking on existing user #${idx}`)
   } else {
     idx = add_new_user(user);
-    logging.log(`Created new user: ${idx}`)
+    logging.log(`Staking on NEW user #${idx}`)
   }
 
   // Deposit the money in the external pool
@@ -147,7 +147,7 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
   let response = Utils.get_callback_result()
 
   if(response.status == 1){
-    // It worked, stake tickets for the user
+    // It worked, give tickets for the user
     stake_tickets_for(idx, amount)
     return true
   }else{
@@ -157,9 +157,6 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
     ContractPromiseBatch.create(account).transfer(amount)
     return false
   }
-
-
-
 }
 
 
@@ -169,6 +166,9 @@ export function unstake(amount: u128): bool {
 
   // Get user info
   let idx: i32 = user_to_idx.getSome(context.predecessor)
+
+  // The guardian cannot unstake (it can only transfer tickets)
+  assert(idx != 0, "The GUARDIAN cannot unstake money!")
 
   // Check if it has enough money
   assert(amount <= user_tickets[idx], "Not enough money")
@@ -299,10 +299,10 @@ export function give_from_reserve(to: string, amount: u128): void {
   let idx = 0
   if (user_to_idx.contains(to)) {
     idx = user_to_idx.getSome(to)
-    logging.log(`Staking on existing user: ${idx}`)
+    logging.log(`Giving ${amount} from the reserve to existing user #${idx}`)
   } else {
     idx = add_new_user(to);
-    logging.log(`Created new user: ${idx}`)
+    logging.log(`Giving ${amount} from the reserve to new user #${idx}`)
   }
 
   // Remove from reserve
