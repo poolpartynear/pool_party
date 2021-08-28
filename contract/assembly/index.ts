@@ -89,7 +89,7 @@ export function get_pool_fees(): u128{
   return DAO.get_pool_fees()
 }
 
-export function change_pool_fees(fees:u128): bool{
+export function change_pool_fees(fees:u8): bool{
   return DAO.change_pool_fees(fees);
 }
 
