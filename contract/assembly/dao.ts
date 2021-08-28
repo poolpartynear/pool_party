@@ -20,6 +20,11 @@ const DAO: string = "dao.pooltest.testnet"
 // lets cap the max number of users, so traversing the tree is at max 90TGAS
 const MAX_USERS: i32 = 8100
 
+// The users cannot have more than a certain amount of NEARs,
+// to limit whale's size in the pool. Default: A millon Nears
+const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000000")
+
+
 export function get_guardian(): string {
   return storage.getPrimitive<string>('dao_guardian', GUARDIAN)
 }
@@ -43,8 +48,14 @@ export function get_max_users(): u32 {
   return storage.getPrimitive<u32>('dao_max_users', MAX_USERS)
 }
 
+export function get_max_deposit(): u128 {
+  if (storage.contains('dao_max_deposit')) {
+    return storage.getSome<u128>('dao_max_deposit')
+  }
+  return MAX_DEPOSIT
+}
 
-function fail_if_not_dao():void{
+function fail_if_not_dao(): void {
   assert(context.predecessor == DAO, "Only the DAO can call this function")
 }
 
@@ -69,6 +80,12 @@ export function change_pool_fees(new_fees:u8): bool{
   assert(new_fees_u128 <= u128.from(100), "Fee must be between 0 - 100")
 
   storage.set<u128>('dao_pool_fees', new_fees_u128)
+  return true
+}
+
+export function change_max_deposit(new_max_deposit: u128): bool {
+  fail_if_not_dao()
+  storage.set<u128>('dao_max_deposit', new_max_deposit)
   return true
 }
 

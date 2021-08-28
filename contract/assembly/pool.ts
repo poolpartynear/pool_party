@@ -124,6 +124,10 @@ export function deposit_and_stake(): void {
     logging.log(`Staking on NEW user #${idx}`)
   }
 
+  const max_amount = DAO.get_max_deposit()
+  assert(user_tickets[idx] + amount <= max_amount,
+         `Surpassed the limit of ${max_amount} tickets that a user can have`)
+
   // Deposit the money in the external pool
   // We add 100yn to cover the cost of staking in an external pool
   let promise: ContractPromise = ContractPromise.create(
