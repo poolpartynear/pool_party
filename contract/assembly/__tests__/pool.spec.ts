@@ -1,79 +1,64 @@
 import { deposit_and_stake_callback, deposit_and_stake, unstake,
-         get_accum_weights } from '..';
+         get_accum_weights, init } from '..';
+import { get_tickets } from '../pool';
+import { get_to_unstake } from '../external';
 
 import * as Raffle from '../raffle'
 
 import { Context, u128, VMContext } from "near-sdk-as";
+import { DAO, get_external_pool, get_guardian } from '../dao';
 
 
-describe("u128 test", () => {
-  it("returns 0 for small divisions", () => {
-    const max = 100
-    for(let i=0; i < max; i++){
-      let div:u128 = u128.from(i) / u128.from(max)
-      expect(div).toBe(u128.Zero)
-    }
+// Aux function
+function set_context(account_id: string, attached_deposit: u128): void{
+  const balance:u128 = u128.from("200000000000000000000")
+  VMContext.setPredecessor_account_id(account_id)
+  VMContext.setAccount_balance(balance)
+  VMContext.setAttached_deposit(attached_deposit)
+  VMContext.setPrepaid_gas(300000000000000)
+}
+
+describe("Initializing", () => {
+  it("cannot be initialized twice", () => {
+    expect(()=>{init("pool", "guardian", "dao")}).not.toThrow()
+    expect(()=>{init("e", "f", "g")}).toThrow()
+    
+    expect(get_guardian()).toBe("guardian")
+    expect(DAO()).toBe("dao")
+    expect(get_external_pool()).toBe("pool")
   })
-
-  it("underflow raises error", () => {
-    expect(()=>{u128.Zero - u128.One}).toThrow()
-  })
-
 })
 
-describe("Random", () => {
-  it("should be random", () => {
-    let trials = 100
-    let max = 10
-    let numbers = new Array<i32>()
-    
-    for(let i=0; i < max; i++){numbers.push(0)}
+describe("User Handling", () => {
+  it("correctly updates total_stake, to_unstake variables", () => {
 
-    for(let i=0; i < trials; i++){
-      let rnd:u128 = Raffle.random_u128(u128.Zero, u128.from(max))
+    init('external_pool', 'theguardian', 'dao' )  // init the contract
 
-      expect(rnd >= u128.Zero && u128.from(max) > rnd)
+    // The guardian deposits first
+    set_context('theguardian', u128.One)
+    deposit_and_stake()
 
-      for(let j=0; j < max; j++){
-        if(rnd == u128.from(j)){ numbers[j] = numbers[j] + 1 }
-      }
+    // Poor man's callback simulation
+    VMContext.setPredecessor_account_id(Context.contractName)
+    deposit_and_stake_callback(0, u128.One)
+
+    for(let i=1; i < 3; i++){
+      set_context(i.toString(), u128.from(i+1))
+      deposit_and_stake()
+
+      // Poor man's callback simulation
+      VMContext.setPredecessor_account_id(Context.contractName)
+      deposit_and_stake_callback(i, u128.from(i+1))
     }
 
-    for(let i=0; i < max; i++){
-      expect(numbers[i] > 5 && numbers[i] < 15).toBe(true)
-    }
-  });
-});
+    VMContext.setPredecessor_account_id("1")
+    VMContext.setPrepaid_gas(300000000000000)
+    unstake(u128.One)
 
-describe("Random", () => {
-  it("should be random from a min to a max", () => {
-    let trials = 100
-    let min = 3
-    let max = 13
-    let total = 15
-    let numbers = new Array<i32>()
-    
-    for(let i=0; i < total; i++){numbers.push(0)}
-
-    for(let i=0; i < trials; i++){
-      let rnd:u128 = Raffle.random_u128(u128.from(min), u128.from(max))
-
-      expect(rnd >= u128.from(min) && u128.from(max) > rnd)
-
-      for(let j=0; j < total; j++){
-        if(rnd == u128.from(j)){ numbers[j] = numbers[j] + 1 }
-      }
-    }
-
-    for(let i=0; i < min; i++){ expect(numbers[i] == 0 ).toBe(true) }
-
-    for(let i=min; i < max; i++){
-      expect(numbers[i] > 5 && numbers[i] < 15).toBe(true)
-    }
-
-    for(let i=max; i < total; i++){ expect(numbers[i] == 0 ).toBe(true) }
-  });
-});
+    expect(get_tickets()).toBe(u128.from(6), "Tickets updated wrong")
+    expect(get_to_unstake()).toBe(u128.One, "To unstake updated wrong")
+  })
+})
 
 
 describe("Binary Tree", () => {
@@ -82,23 +67,18 @@ describe("Binary Tree", () => {
     const subjects:i32 = 10
     const balance:u128 = u128.from("200000000000000000000")
 
+    init('external_pool', 'theguardian', 'dao' )  // init the contract
+
     // The guardian deposits first
-    VMContext.setPredecessor_account_id('pooltest.testnet')
-    VMContext.setAccount_balance(balance)
-    VMContext.setAttached_deposit(u128.from(1))
-    VMContext.setPrepaid_gas(300000000000000)
+    set_context('theguardian', u128.One)
     deposit_and_stake()
 
     // Poor man's callback simulation
     VMContext.setPredecessor_account_id(Context.contractName)
-    deposit_and_stake_callback(0, u128.from(1))
+    deposit_and_stake_callback(0, u128.One)
 
     for(let i=1; i < subjects; i++){
-
-      VMContext.setPredecessor_account_id(i.toString())
-      VMContext.setAccount_balance(balance)
-      VMContext.setAttached_deposit(u128.from(i+1))
-      VMContext.setPrepaid_gas(300000000000000)
+      set_context(i.toString(), u128.from(i+1))
       deposit_and_stake()
 
       // Poor man's callback simulation
@@ -179,23 +159,17 @@ describe("Binary Tree", () => {
 
 describe("Reserve Guardian", () => {
   it("the reserve guardian must be the first user", () => {
-    
+
+    init('external_pool', 'theguardian', 'dao' )  // init the contract
+
     const balance:u128 = u128.from("200000000000000000000")
 
     // If someone besides the guardian goes first it fails
-    VMContext.setPredecessor_account_id("notguardian.testnet")
-    VMContext.setAccount_balance(balance)
-    VMContext.setAttached_deposit(u128.from(1))
-    VMContext.setPrepaid_gas(300000000000000)
-
+    set_context("notguardian", u128.One)
     expect(deposit_and_stake).toThrow()
 
     // It doesn't fail for the guardian
-    VMContext.setPredecessor_account_id("pooltest.testnet")
-    VMContext.setAccount_balance(balance)
-    VMContext.setAttached_deposit(u128.from(1))
-    VMContext.setPrepaid_gas(300000000000000)
-
+    set_context("theguardian", u128.One)
     expect(deposit_and_stake).not.toThrow()
   });
 })

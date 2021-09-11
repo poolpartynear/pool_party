@@ -6,6 +6,9 @@ import * as External from "./external"
 import * as DAO from './dao'
 import * as Prize from "./prize"
 
+export function init(pool: string, guardian: string, dao: string): bool{
+  return DAO.init_dao(pool, guardian, dao)
+}
 
 export function get_pool_info(): PoolInfo {
   return Pool.get_info()
