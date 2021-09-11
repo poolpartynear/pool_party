@@ -43,7 +43,7 @@ describe('PoolParty', function () {
     }
 
     unstake = async function(amount, contract){
-      amount = nearAPI.utils.format.parseNearAmount(amount.toString())
+      amount = parseNearAmount(amount.toString())
       let result = await contract.account.functionCall(
         nearConfig.contractName, 'unstake', {amount:amount}, 300000000000000, 0
       )
@@ -182,7 +182,7 @@ describe('PoolParty', function () {
     it("correctly add more tickets to existing users", async function(){
       // Users buy tickets
       await deposit_and_stake(5, alice)
-      await deposit_and_stake(0.123456, dao)
+      await deposit_and_stake(1.123456, dao)
       await deposit_and_stake(2.123, bob)
 
       // get info
@@ -191,7 +191,7 @@ describe('PoolParty', function () {
       dao_info = await get_account(dao_address)
 
       const infos = [alice_info, bob_info, dao_info]
-      const tickets = [10, 12.123, 0.123456]
+      const tickets = [10, 12.123, 1.123456]
 
       for(i=0; i<3; i++){
         expect(infos[i].staked_balance).toBe(tickets[i])
@@ -200,7 +200,7 @@ describe('PoolParty', function () {
       }
       
       pool_info = await get_pool_info()
-      expect(pool_info.total_staked).toBe(10 + 12.123 + 0.123456 + 1)
+      expect(pool_info.total_staked).toBe(10 + 12.123 + 1.123456 + 1)
     })
 
     it("correctly unstacks money", async function(){
@@ -214,7 +214,7 @@ describe('PoolParty', function () {
       pool_info = await get_pool_info()
 
       const infos = [alice_info, bob_info, dao_info]
-      const tickets = [9, 11, 0.123456]
+      const tickets = [9, 11, 1.123456]
       const unstaked_balance = [1, 1.123, 0]
       const available = [false, false, false]
 
@@ -225,7 +225,7 @@ describe('PoolParty', function () {
       }
 
       // The pool returns as total_staked the total_tickets - to_unstake
-      expect(pool_info.total_staked).toBe(9 + 11 + 0.123456 + 1)
+      expect(pool_info.total_staked).toBe(9 + 11 + 1.123456 + 1)
     })
 
     it("the prize changed accordingly", async function(){
@@ -233,7 +233,7 @@ describe('PoolParty', function () {
       let pool_info = await get_pool_info()
 
       // We are using my pool, which doubles the money you deposit
-      expect(pool_info.prize).toBe(10 + 12.123 + 0.123456 + 1)
+      expect(pool_info.prize).toBe(10 + 12.123 + 1.123456 + 1)
     })
 
     it("can claim money unstacked in 1 turn", async function(){
@@ -253,14 +253,14 @@ describe('PoolParty', function () {
       // the 2nd turn if for the people that ask now until next external_unstake
       await unstake(0.001, dao)
       account = await get_account(dao_address)
-      expect(account.staked_balance).toBe(0.123456 - 0.001)
+      expect(account.staked_balance).toBeCloseTo(1.123456 - 0.001)
       expect(account.unstaked_balance).toBe(0.001)
       expect(account.available_when).toBe(2)
     })
 
     it("on a raffle, the reserve gets a 5% and the winner the rest", async function(){
-      let current_balances = [1, 9, 11, 0.122456]
-      let prize = 10+12.123+0.123456+1
+      let current_balances = [1, 9, 11, 1.123456 - 0.001]
+      let prize = 10+12.123+1.123456+1
       let winner = await raffle()
 
       let reserve_prize = prize * 0.05
@@ -288,7 +288,8 @@ describe('PoolParty', function () {
     })
 
     it("ERROR: cannot unstack more money than available", async function(){
-      await expect(unstake(1, dao)).rejects.toThrow()
+      let account = await get_account(dao_address)
+      await expect(unstake(account.staked_balance + 0.1, dao)).rejects.toThrow()
     })
 
     it("ERROR: cannot access method deposit_and_stake_callback", async ()=>{

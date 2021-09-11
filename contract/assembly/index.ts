@@ -88,7 +88,7 @@ export function get_user_by_id(idx: i32): string {
 
 
 // DAO
-export function get_pool_fees(): u128{
+export function get_pool_fees(): u8{
   return DAO.get_pool_fees()
 }
 
@@ -110,6 +110,22 @@ export function get_max_users(): i32{
 
 export function change_max_users(max_users:i32): bool{
   return DAO.change_max_users(max_users);
+}
+
+export function get_min_deposit(): u128{
+  return DAO.get_min_deposit()
+}
+
+export function change_min_deposit(new_min_deposit:u128): bool{
+  return DAO.change_min_deposit(new_min_deposit);
+}
+
+export function get_max_deposit(): u128{
+  return DAO.get_max_deposit()
+}
+
+export function change_max_deposit(new_max_deposit:u128): bool{
+  return DAO.change_max_deposit(new_max_deposit);
 }
 
 export function get_guardian():string{

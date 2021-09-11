@@ -101,11 +101,12 @@ export function deposit_and_stake(): void {
   assert(context.prepaidGas >= 190 * TGAS, "Not enough gas")
 
   let amount: u128 = context.attachedDeposit
-  assert(amount > u128.Zero, "Please attach some NEARs")
+  const min_amount = DAO.get_min_deposit()
+  assert(amount >= min_amount, `Please attach at least ${min_amount} NEAR(s)`)
 
   // Get the total number of users
   const N: i32 = storage.getPrimitive<i32>('total_users', 0)
-  assert(N < (DAO.get_max_users() as i32), "Maximum users reached, please user other pool")
+  assert(N < DAO.get_max_users(), "Maximum users reached, please user other pool")
 
   // The guardian must deposit first
   if (N == 0) {
@@ -262,7 +263,8 @@ export function raffle(): i32 {
   let prize: u128 = Prize.pool_prize()
 
   // A part goes to the reserve
-  let reserve: u128 = (prize * DAO.get_pool_fees()) / u128.from(100)
+  const fees:u128 = u128.from(DAO.get_pool_fees())
+  let reserve: u128 = (prize * fees) / u128.from(100)
   stake_tickets_for(0, reserve)
 
   // We give most to the user
@@ -296,7 +298,7 @@ export function get_winners(): Array<Winner> {
 
 // The TOKEN contract can give part of the reserve to a user
 export function give_from_reserve(to: string, amount: u128): void {
-  assert(context.prepaidGas >= 120 * TGAS, "This function requires at least 90TGAS")
+  assert(context.prepaidGas >= 120 * TGAS, "This function requires at least 120TGAS")
   assert(context.predecessor == DAO.get_guardian(), "Only the GUARDIAN can use the reserve")
   assert(user_tickets[0] >= amount, "Not enough tickets in the reserve")
 
@@ -313,6 +315,6 @@ export function give_from_reserve(to: string, amount: u128): void {
   user_tickets[0] -= amount
   accum_weights[0] -= amount
 
-  // Give to the user -> updating the tree can cost up to 90 TGAS
+  // Give to the user, note that updating the tree can cost up to 90 TGAS
   stake_tickets_for(idx, amount)
 }

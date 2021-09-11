@@ -76,7 +76,8 @@ async function create_contract(accountId){
 										// Functions for DAO
 										'get_pool_fees', 'change_pool_fees', 'get_raffle_wait',
 										'change_time_between_raffles', 'get_max_users',
-										'change_max_users', 'get_guardian',
+										'change_max_users', 'get_min_deposit', 'change_min_deposit',
+										'get_max_deposit', 'change_max_deposit', 'get_guardian',
 										'propose_new_guardian', 'accept_being_guardian'],
 	};
 

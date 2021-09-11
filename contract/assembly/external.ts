@@ -125,11 +125,15 @@ function unstake_external(): void {
     // There are tickets to unstake  
     let args: AmountArg = new AmountArg("", to_unstake)
 
-    let promise = ContractPromise.create(DAO.get_external_pool(), "unstake", args.encode(),
+    let promise = ContractPromise.create(
+      DAO.get_external_pool(), "unstake", args.encode(),
       120 * TGAS, u128.Zero)
 
-    let callbackPromise = promise.then(context.contractName, "unstake_external_callback",
-      "", 120 * TGAS)
+    let callbackPromise = promise.then(
+      context.contractName, "unstake_external_callback",
+      "", 120 * TGAS
+    )
+
     callbackPromise.returnAsResult();
   }
 }
@@ -140,10 +144,9 @@ export function unstake_external_callback(): bool {
   if (response.status == 1) {
     // remove tickets from pool
     const to_unstake: u128 = get_to_unstake()
-    const pool_tickets: u128 = Pool.get_tickets()
 
     // update the number of tickets in the pool
-    Pool.set_tickets(pool_tickets - to_unstake)
+    Pool.set_tickets(Pool.get_tickets() - to_unstake)
 
     // update the epoch in which we can withdraw
     storage.set<u64>('next_withdraw_epoch', context.epochHeight + UNSTAKE_EPOCH)
