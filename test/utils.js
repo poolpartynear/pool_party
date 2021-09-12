@@ -78,7 +78,10 @@ async function create_contract(accountId){
 										'change_time_between_raffles', 'get_max_users',
 										'change_max_users', 'get_min_deposit', 'change_min_deposit',
 										'get_max_deposit', 'change_max_deposit', 'get_guardian',
-										'propose_new_guardian', 'accept_being_guardian'],
+										'propose_new_guardian', 'accept_being_guardian',
+
+										// Token
+										'give_from_reserve']
 	};
 
 	return new Contract(account, nearConfig.contractName, contractMethods);

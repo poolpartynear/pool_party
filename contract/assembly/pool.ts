@@ -314,6 +314,7 @@ export function give_from_reserve(to: string, amount: u128): void {
   // Remove from reserve
   user_tickets[0] -= amount
   accum_weights[0] -= amount
+  set_tickets(get_tickets() - amount)  // stake_tickets_for adds them back
 
   // Give to the user, note that updating the tree can cost up to 90 TGAS
   stake_tickets_for(idx, amount)

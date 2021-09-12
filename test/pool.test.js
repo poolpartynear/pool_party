@@ -82,16 +82,6 @@ describe('PoolParty', function () {
       return info  
     }
 
-    get_pool_fees = async function(contract){
-      let fees = await contract.get_pool_fees()
-      return 100 / parseFloat(fees)
-    }
-
-    change_pool_fees = async function(fees, contract){
-      amount = (100/ fees).toString()
-      let result = await contract.change_pool_fees({fees})
-    }
-
     raffle = async function(contract=alice){
       let result = await contract.account.functionCall(
         nearConfig.contractName, 'raffle', {}, 300000000000000, 0
