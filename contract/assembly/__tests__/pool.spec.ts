@@ -9,12 +9,14 @@ import { Context, u128, VMContext } from "near-sdk-as";
 import { DAO, get_external_pool, get_guardian } from '../dao';
 
 
+const NEAR: u128 = u128.from("1000000000000000000000000")
+
 // Aux function
-function set_context(account_id: string, attached_deposit: u128): void{
-  const balance:u128 = u128.from("200000000000000000000")
+function set_context(account_id: string, units: u128): void{
+  const balance:u128 = u128.from(20)*NEAR
   VMContext.setPredecessor_account_id(account_id)
   VMContext.setAccount_balance(balance)
-  VMContext.setAttached_deposit(attached_deposit)
+  VMContext.setAttached_deposit(units*NEAR)
   VMContext.setPrepaid_gas(300000000000000)
 }
 
