@@ -186,7 +186,7 @@ export function unstake(amount: u128): bool {
   // add to the amount we will unstake from external next time
   External.set_to_unstake(External.get_to_unstake() + amount)
 
-  // the user will be able to in the next withdraw_turn
+  // the user will be able to withdraw in the next withdraw_turn
   user_withdraw_turn[idx] = External.get_next_withdraw_turn()
 
   // update user info

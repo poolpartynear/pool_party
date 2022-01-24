@@ -1,5 +1,5 @@
 import { u128 } from "near-sdk-as"
-import { idx_to_user, user_tickets, accum_weights, winners, PoolInfo, User, Winner } from "./model"
+import { idx_to_user, user_tickets, accum_weights, PoolInfo, User, Winner } from "./model"
 
 import * as Pool from "./pool"
 import * as External from "./external"
@@ -7,7 +7,7 @@ import * as DAO from './dao'
 import * as Prize from "./prize"
 
 export function init(pool: string, guardian: string, dao: string): bool{
-  return DAO.init_dao(pool, guardian, dao)
+  return DAO.init(pool, guardian, dao)
 }
 
 export function get_pool_info(): PoolInfo {
@@ -26,7 +26,6 @@ export function emergency_start(): bool{
 export function emergency_stop(): bool{
   return DAO.emergency_stop()
 }
-
 
 // Interact with pool
 export function deposit_and_stake(): void {

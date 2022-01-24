@@ -20,7 +20,7 @@ const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000000")
 const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 
 
-export function init_dao(pool: string, guardian: string, dao: string): bool{
+export function init(pool: string, guardian: string, dao: string): bool{
   // Initialize the POOL, GUARDIAN and DAO
   // - The POOL is the external pool on which we stake all the NEAR
   // - The GUARDIAN can distribute tickets from the reserve to the users
