@@ -141,3 +141,20 @@ export function accept_being_guardian(): bool{
 
   return true
 }
+
+// Functions to start and stop an emergency (halts the contract)
+export function emergency_start(): bool{
+  fail_if_not_dao()
+  storage.set<bool>('emergency', true)
+  return true
+}
+
+export function emergency_stop(): bool{
+  fail_if_not_dao()
+  storage.set<bool>('emergency', false)
+  return true
+}
+
+export function is_emergency(): bool{
+  return storage.getPrimitive<bool>('emergency', false)
+}
