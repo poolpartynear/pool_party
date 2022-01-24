@@ -22,8 +22,11 @@ export class User {
 
 @nearBindgen
 export class Winner {
-  constructor(public account_id: string,
-    public amount: u128) { }
+  constructor(
+    public account_id: string,
+    public amount: u128,
+    public when: u64
+  ) { }
 }
 
 

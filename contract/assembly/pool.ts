@@ -245,7 +245,7 @@ export function withdraw_all_callback(idx: i32, amount: u128): void {
 
 
 // Raffle ---------------------------------------------------------------------
-function find_winner(winning_ticket: u128): i32 {
+export function find_winner(winning_ticket: u128): i32 {
   // Gets the user with the winning ticket by searching in the binary tree.
   // This function enumerates the users in pre-order. This does NOT affect
   // the probability of winning, which is nbr_tickets_owned / tickets_total.
@@ -312,19 +312,23 @@ export function raffle(): i32 {
   storage.set<u128>('prize', u128.Zero)
 
   let winner_name: string = idx_to_user.getSome(winner)
-  winners.push(new Winner(winner_name, user_prize))
+  winners.push(new Winner(winner_name, user_prize, now))
   return winner
 }
 
-export function get_winners(): Array<Winner> {
-  // Returns the last 10 winners
-  let size: i32 = winners.length
+export function number_of_winners(): i32 {
+  // Returns the number of winners so far
+  return winners.length
+}
 
-  let lower: i32 = 0
-  if (size >= 10) { lower = size - 10 }
+export function get_winners(from:i32, until:i32): Array<Winner> {
+  assert(from >= 0, "'from' must be positive")
+  assert(until <= winners.length, "'until' must be < number_of_winners")
 
   let to_return: Array<Winner> = new Array<Winner>()
-  for (let i: i32 = lower; i < size; i++) { to_return.push(winners[i]) }
+  for (let i: i32 = from; i < until; i++) {
+    to_return.push(winners[i])
+  }
 
   return to_return
 }

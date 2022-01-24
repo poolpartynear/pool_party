@@ -76,8 +76,12 @@ export function raffle(): i32{
   return Pool.raffle()
 }
 
-export function get_winners(): Array<Winner> {
-  return Pool.get_winners()
+export function get_winners(from:i32, until:i32): Array<Winner> {
+  return Pool.get_winners(from, until)
+}
+
+export function number_of_winners() :i32{
+  return Pool.number_of_winners()
 }
 
 
