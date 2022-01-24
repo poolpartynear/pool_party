@@ -18,6 +18,15 @@ export function get_account(account_id: string): User {
   return Pool.get_account(account_id)
 }
 
+// Functions to start and stop an emergency (halts the contract)
+export function emergency_start(): bool{
+  return DAO.emergency_start()
+}
+
+export function emergency_stop(): bool{
+  return DAO.emergency_stop()
+}
+
 
 // Interact with pool
 export function deposit_and_stake(): void {
