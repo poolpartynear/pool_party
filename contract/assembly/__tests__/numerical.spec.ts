@@ -1,4 +1,4 @@
-import * as Raffle from '../raffle'
+import * as Utils from '../utils'
 import { u128 } from "near-sdk-as"
 
 
@@ -25,7 +25,7 @@ describe("Random", () => {
     for(let i=0; i < max; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
-      let rnd:u128 = Raffle.random_u128(u128.Zero, u128.from(max))
+      let rnd:u128 = Utils.random_u128(u128.Zero, u128.from(max))
 
       expect(rnd >= u128.Zero && u128.from(max) > rnd)
 
@@ -51,7 +51,7 @@ describe("Random", () => {
     for(let i=0; i < total; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
-      let rnd:u128 = Raffle.random_u128(u128.from(min), u128.from(max))
+      let rnd:u128 = Utils.random_u128(u128.from(min), u128.from(max))
 
       expect(rnd >= u128.from(min) && u128.from(max) > rnd)
 

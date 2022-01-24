@@ -1,9 +1,7 @@
 import { deposit_and_stake_callback, deposit_and_stake, unstake,
          get_accum_weights, init } from '..';
-import { get_tickets } from '../pool';
+import { get_tickets, find_winner } from '../pool';
 import { get_to_unstake } from '../external';
-
-import * as Raffle from '../raffle'
 
 import { Context, u128, VMContext } from "near-sdk-as";
 import { DAO, get_external_pool, get_guardian } from '../dao';
@@ -141,20 +139,20 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    expect(Raffle.select_winner(u128.from(0))).toBe(0, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(1))).toBe(0, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(2))).toBe(1, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(3))).toBe(1, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(40))).toBe(2, "wrong winner")
-    expect(Raffle.select_winner(u128.from(41))).toBe(2, "wrong winner")
-    expect(Raffle.select_winner(u128.from(4))).toBe(3, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(9))).toBe(3, "wrong winner") 
-    expect(Raffle.select_winner(u128.from(44))).toBe(5, "wrong winner")
-    expect(Raffle.select_winner(u128.from(50))).toBe(5, "wrong winner")
-    expect(Raffle.select_winner(u128.from(51))).toBe(6, "wrong winner")
-    expect(Raffle.select_winner(u128.from(52))).toBe(6, "wrong winner")
-    expect(Raffle.select_winner(u128.from(57))).toBe(6, "wrong winner")
-    expect(Raffle.select_winner(u128.from(11))).toBe(7, "wrong winner")
+    expect(find_winner(u128.from(0))).toBe(0, "wrong winner") 
+    expect(find_winner(u128.from(1))).toBe(0, "wrong winner") 
+    expect(find_winner(u128.from(2))).toBe(1, "wrong winner") 
+    expect(find_winner(u128.from(3))).toBe(1, "wrong winner") 
+    expect(find_winner(u128.from(40))).toBe(2, "wrong winner")
+    expect(find_winner(u128.from(41))).toBe(2, "wrong winner")
+    expect(find_winner(u128.from(4))).toBe(3, "wrong winner") 
+    expect(find_winner(u128.from(9))).toBe(3, "wrong winner") 
+    expect(find_winner(u128.from(44))).toBe(5, "wrong winner")
+    expect(find_winner(u128.from(50))).toBe(5, "wrong winner")
+    expect(find_winner(u128.from(51))).toBe(6, "wrong winner")
+    expect(find_winner(u128.from(52))).toBe(6, "wrong winner")
+    expect(find_winner(u128.from(57))).toBe(6, "wrong winner")
+    expect(find_winner(u128.from(11))).toBe(7, "wrong winner")
   });
 })
 
