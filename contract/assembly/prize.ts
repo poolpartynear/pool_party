@@ -23,6 +23,8 @@ class PoolArgs {
 }
 
 export function update_prize(): void {
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   // Ask how many NEARs we have staked in the external pool
   const args: PoolArgs = new PoolArgs(context.contractName)
 
