@@ -79,6 +79,7 @@ async function create_contract(accountId){
 										'change_max_users', 'get_min_deposit', 'change_min_deposit',
 										'get_max_deposit', 'change_max_deposit', 'get_guardian',
 										'propose_new_guardian', 'accept_being_guardian',
+										'emergency_start', 'emergency_stop',
 
 										// Token
 										'give_from_reserve']
