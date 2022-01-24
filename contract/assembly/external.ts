@@ -60,6 +60,9 @@ export function can_withdraw_external(): bool {
 
 // Interact external ----------------------------------------------------------
 export function interact_external(): void {
+
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   const external_action: string = storage.getPrimitive<string>('external_action',
     'unstake')
   if (external_action == 'withdraw') {
