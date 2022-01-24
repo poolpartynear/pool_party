@@ -106,6 +106,10 @@ describe('PoolParty', function () {
       expect(res).toBe(true)
     })
 
+    it("cannot initialize twice", async function(){
+      await expect(init(pool_address, guardian_address, dao_address)).rejects.toThrow()
+    })
+
     it("responds empty user for non existing users", async function(){
       let info = await get_account("non-existent-user")
       expect(info.staked_balance).toBe(0, "non-user has tickets")
