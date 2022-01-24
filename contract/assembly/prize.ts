@@ -24,12 +24,12 @@ class PoolArgs {
 
 export function update_prize(): void {
   // Ask how many NEARs we have staked in the external pool
-  let args: PoolArgs = new PoolArgs(context.contractName)
+  const args: PoolArgs = new PoolArgs(context.contractName)
 
-  let promise = ContractPromise.create(
+  const promise = ContractPromise.create(
     DAO.get_external_pool(), "get_account", args.encode(), 15 * TGAS, u128.Zero
   )
-  let callbackPromise = promise.then(
+  const callbackPromise = promise.then(
     context.contractName, "update_prize_callback", "", 15 * TGAS
   )
   callbackPromise.returnAsResult();

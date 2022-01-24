@@ -5,7 +5,7 @@ export function get_callback_result(): ContractPromiseResult {
   assert(context.predecessor == context.contractName, "Just don't")
 
   // Return the result from the external pool
-  let results = ContractPromise.getResults()
+  const results = ContractPromise.getResults()
 
   if (results.length > 0) { return results[0] }
 

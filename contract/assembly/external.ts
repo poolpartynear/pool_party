@@ -85,9 +85,9 @@ function withdraw_external(): void {
   start_interacting_with_external()
 
   // withdraw money from external pool
-  let promise = ContractPromise.create(DAO.get_external_pool(), "withdraw_all", "",
+  const promise = ContractPromise.create(DAO.get_external_pool(), "withdraw_all", "",
     120 * TGAS, u128.Zero)
-  let callbackPromise = promise.then(context.contractName, "withdraw_external_callback",
+  const callbackPromise = promise.then(context.contractName, "withdraw_external_callback",
     "", 120 * TGAS)
   callbackPromise.returnAsResult()
 }
@@ -126,13 +126,13 @@ function unstake_external(): void {
     stop_interacting_with_external()
   } else {
     // There are tickets to unstake  
-    let args: AmountArg = new AmountArg("", to_unstake)
+    const args: AmountArg = new AmountArg("", to_unstake)
 
-    let promise = ContractPromise.create(
+    const promise = ContractPromise.create(
       DAO.get_external_pool(), "unstake", args.encode(),
       120 * TGAS, u128.Zero)
 
-    let callbackPromise = promise.then(
+    const callbackPromise = promise.then(
       context.contractName, "unstake_external_callback",
       "", 120 * TGAS
     )

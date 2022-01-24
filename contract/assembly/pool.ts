@@ -101,7 +101,7 @@ export function deposit_and_stake(): void {
 
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  let amount: u128 = context.attachedDeposit
+  const amount: u128 = context.attachedDeposit
   const min_amount = DAO.get_min_deposit()
   assert(amount >= min_amount, `Please attach at least ${min_amount} NEAR(s)`)
 
@@ -132,14 +132,14 @@ export function deposit_and_stake(): void {
 
   // Deposit the money in the external pool
   // We add 100yn to cover the cost of staking in an external pool
-  let promise: ContractPromise = ContractPromise.create(
+  const promise: ContractPromise = ContractPromise.create(
     DAO.get_external_pool(), "deposit_and_stake", "{}", 50 * TGAS, amount + u128.from(100)
   )
 
   // Create a callback to _deposit_and_stake
-  let args: IdxAmount = new IdxAmount(idx, amount)
+  const args: IdxAmount = new IdxAmount(idx, amount)
 
-  let callbackPromise = promise.then(
+  const callbackPromise = promise.then(
     context.contractName,
     "deposit_and_stake_callback",
     args.encode(),
@@ -150,7 +150,7 @@ export function deposit_and_stake(): void {
 }
 
 export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
-  let response = Utils.get_callback_result()
+  const response = Utils.get_callback_result()
 
   if(response.status == 1){
     // It worked, give tickets for the user
@@ -159,7 +159,7 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
   }else{
     // It failed, return their money
     logging.log("Failed attempt to deposit in the pool, returning money to the user")
-    let account = idx_to_user.getSome(idx)
+    const account = idx_to_user.getSome(idx)
     ContractPromiseBatch.create(account).transfer(amount)
     return false
   }
@@ -214,18 +214,18 @@ export function withdraw_all(): void {
 
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
-  let idx: i32 = user_to_idx.getSome(context.predecessor)
+  const idx: i32 = user_to_idx.getSome(context.predecessor)
 
   assert(External.get_current_turn() >= user_withdraw_turn[idx], "Withdraw not ready")
 
-  let amount: u128 = user_unstaked[idx]
+  const amount: u128 = user_unstaked[idx]
   assert(amount > u128.Zero, "Nothing to unstake")
 
   // Set user's unstake amount to 0 to avoid reentracy attacks
   user_unstaked[idx] = u128.Zero
 
   // Send money to the user and callback to see it succeded
-  let args: IdxAmount = new IdxAmount(idx, amount)
+  const args: IdxAmount = new IdxAmount(idx, amount)
 
   ContractPromiseBatch.create(context.predecessor)
     .transfer(amount)
@@ -234,7 +234,7 @@ export function withdraw_all(): void {
 }
 
 export function withdraw_all_callback(idx: i32, amount: u128): void {
-  let response = Utils.get_callback_result()
+  const response = Utils.get_callback_result()
 
   if (response.status == 1) {
     logging.log(`Sent ${amount} to ${idx_to_user.getSome(idx)}`)
@@ -276,9 +276,9 @@ export function raffle(): i32 {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
   // Function to make the raffle
-  let now: u64 = env.block_timestamp()
+  const now: u64 = env.block_timestamp()
 
-  let next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
+  const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
 
   assert(now >= next_raffle, "Not enough time has passed")
 
@@ -293,16 +293,16 @@ export function raffle(): i32 {
   }
 
   // Retrieve the winning user from the binary tree
-  let winner: i32 = find_winner(winning_ticket)
-  let prize: u128 = Prize.pool_prize()
+  const winner: i32 = find_winner(winning_ticket)
+  const prize: u128 = Prize.pool_prize()
 
   // A part goes to the reserve
   const fees:u128 = u128.from(DAO.get_pool_fees())
-  let reserve: u128 = (prize * fees) / u128.from(100)
+  const reserve: u128 = (prize * fees) / u128.from(100)
   stake_tickets_for(0, reserve)
 
   // We give most to the user
-  let user_prize: u128 = prize - reserve
+  const user_prize: u128 = prize - reserve
   stake_tickets_for(winner, user_prize)
 
   logging.log(`Reserve: ${reserve} - Prize: ${user_prize}`)
@@ -311,7 +311,7 @@ export function raffle(): i32 {
   storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_raffle_wait())
   storage.set<u128>('prize', u128.Zero)
 
-  let winner_name: string = idx_to_user.getSome(winner)
+  const winner_name: string = idx_to_user.getSome(winner)
   winners.push(new Winner(winner_name, user_prize, now))
   return winner
 }
