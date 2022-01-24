@@ -7,7 +7,6 @@ import * as External from './external'
 import * as DAO from './dao'
 import * as Utils from './utils'
 import { TGAS } from "./constants"
-import * as Raffle from './raffle'
 
 
 // Total number of tickets in the pool
@@ -100,6 +99,8 @@ export function deposit_and_stake(): void {
   // Function called by users to buy tickets
   assert(context.prepaidGas >= 190 * TGAS, "Not enough gas")
 
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   let amount: u128 = context.attachedDeposit
   const min_amount = DAO.get_min_deposit()
   assert(amount >= min_amount, `Please attach at least ${min_amount} NEAR(s)`)
@@ -169,6 +170,8 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
 export function unstake(amount: u128): bool {
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   // Get user info
   let idx: i32 = user_to_idx.getSome(context.predecessor)
 
@@ -207,6 +210,8 @@ export function withdraw_all(): void {
   // Function called by the user to withdraw their staked NEARs
   assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
 
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   assert(user_to_idx.contains(context.predecessor), "User dont exist")
 
   let idx: i32 = user_to_idx.getSome(context.predecessor)
@@ -240,7 +245,36 @@ export function withdraw_all_callback(idx: i32, amount: u128): void {
 
 
 // Raffle ---------------------------------------------------------------------
+function find_winner(winning_ticket: u128): i32 {
+  // Gets the user with the winning ticket by searching in the binary tree.
+  // This function enumerates the users in pre-order. This does NOT affect
+  // the probability of winning, which is nbr_tickets_owned / tickets_total.
+  let idx: i32 = 0
+
+  while (true) {
+    let left: i32 = idx*2 + 1
+    let right: i32 = idx*2 + 2
+
+    if (winning_ticket < user_tickets[idx]) {
+      return idx
+    }
+
+    if (winning_ticket < user_tickets[idx] + accum_weights[left]) {
+      winning_ticket = winning_ticket - user_tickets[idx]
+      idx = left
+    } else {
+      winning_ticket = winning_ticket - user_tickets[idx] - accum_weights[left]
+      idx = right
+    }
+  }
+}
+
 export function raffle(): i32 {
+  // This function needs 190TGas to work, but we do not
+  // assert it since, if it fails, it rollsback
+
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
   // Function to make the raffle
   let now: u64 = env.block_timestamp()
 
@@ -248,18 +282,18 @@ export function raffle(): i32 {
 
   assert(now >= next_raffle, "Not enough time has passed")
 
-  // If the total amount of accumulated tickets is equal to the tickets of
-  // the reserve, then nobody is playing. Pick the ticket 0 so the reserve wins
+  // By default the reserve wins
   let winning_ticket: u128 = u128.Zero
 
   if (accum_weights[0] > user_tickets[0]) {
-    // Raffle between all the tickets, excluding those from the reserve
+    // If there are more tickets than those in the reserve, then
+    // we have users. Raffle between them excluding the reserve
     // i.e. exclude the tickets numbered from 0 to user_tickets[0]
-    winning_ticket = Raffle.random_u128(user_tickets[0], accum_weights[0])
+    winning_ticket = Utils.random_u128(user_tickets[0], accum_weights[0])
   }
 
   // Retrieve the winning user from the binary tree
-  let winner: i32 = Raffle.select_winner(winning_ticket)
+  let winner: i32 = find_winner(winning_ticket)
   let prize: u128 = Prize.pool_prize()
 
   // A part goes to the reserve
