@@ -201,7 +201,6 @@ describe('PoolParty', function () {
       await unstake(1, alice)
       await unstake(1.123, bob)
 
-      // only A should have changed
       alice_info = await get_account(alice_address)
       bob_info = await get_account(bob_address)
       dao_info = await get_account(dao_address)
@@ -243,8 +242,8 @@ describe('PoolParty', function () {
       await interact_external(alice)
 
       // If dao unstakes money now, it should wait 2 turns
-      // the 1st turn if for the people that asked when alice did
-      // the 2nd turn if for the people that ask now until next external_unstake
+      // the 1st turn is for the people that asked when alice did
+      // the 2nd turn is for the people that ask now until next external_unstake
       await unstake(0.001, dao)
       account = await get_account(dao_address)
       expect(account.staked_balance).toBeCloseTo(1.123456 - 0.001)
