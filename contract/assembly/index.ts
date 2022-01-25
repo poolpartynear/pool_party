@@ -57,8 +57,8 @@ export function withdraw_external_callback(): bool{
   return External.withdraw_external_callback()
 }
 
-export function unstake_external_callback(_user:string, amount:u128): bool{
-  return External.unstake_external_callback(_user, amount)
+export function unstake_external_callback(amount: u128): bool{
+  return External.unstake_external_callback(amount)
 }
 
 

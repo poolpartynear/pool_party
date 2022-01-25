@@ -105,7 +105,7 @@ export function withdraw_external_callback(): bool {
 // Unstake external -----------------------------------------------------------
 @nearBindgen
 class AmountArg {
-  constructor(public user: string, public amount: u128) { }
+  constructor(public amount: u128) { }
 }
 
 function unstake_external(): void {
@@ -120,7 +120,7 @@ function unstake_external(): void {
     start_interacting()
 
     // There are tickets to unstake  
-    const args: AmountArg = new AmountArg("", to_unstake)
+    const args: AmountArg = new AmountArg(to_unstake)
 
     // If someone wants to unstake, they will get the next turn
     storage.set<u64>('next_withdraw_turn', get_next_withdraw_turn() + 1)
@@ -138,7 +138,7 @@ function unstake_external(): void {
   }
 }
 
-export function unstake_external_callback(_user:string, amount:u128): bool {
+export function unstake_external_callback(amount:u128): bool {
   const response = Utils.get_callback_result()
 
   if (response.status == 1) {
