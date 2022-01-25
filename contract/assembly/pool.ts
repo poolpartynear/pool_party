@@ -1,11 +1,12 @@
 import { storage, context, env, u128, ContractPromise, ContractPromiseBatch, logging } from "near-sdk-as"
-import { user_to_idx, idx_to_user, user_tickets, accum_weights, user_unstaked,
+import { user_to_idx, idx_to_user, user_unstaked,
          user_withdraw_turn, winners, PoolInfo, User, Winner } from "./model"
 
 import * as Prize from './prize'
 import * as External from './external'
 import * as DAO from './dao'
 import * as Utils from './utils'
+import * as Tree from './tree'
 import { TGAS } from "./constants"
 
 
@@ -28,7 +29,7 @@ export function get_info(): PoolInfo {
   const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
   const prize: u128 = Prize.pool_prize()
 
-  const reserve: u128 = (user_tickets.length > 0)? user_tickets[0] : u128.Zero
+  const reserve: u128 = Tree.tickets_of(0)
 
   const withdraw_external_ready: bool = External.can_withdraw_external()
 
@@ -43,7 +44,7 @@ export function get_account(account_id: string): User {
   }
 
   const idx: i32 = user_to_idx.getSome(account_id)
-  const tickets: u128 = user_tickets[idx]
+  const tickets: u128 = Tree.tickets_of(idx)
   const unstaked: u128 = user_unstaked[idx]
 
   const when: u64 = user_withdraw_turn[idx]
@@ -64,8 +65,7 @@ function add_new_user(user: string): i32{
 
   user_to_idx.set(user, N)
   idx_to_user.set(N, user)
-  user_tickets.push(u128.Zero)
-  accum_weights.push(u128.Zero)
+  Tree.add_user(N)
   user_unstaked.push(u128.Zero)
   user_withdraw_turn.push(0)
 
@@ -74,16 +74,9 @@ function add_new_user(user: string): i32{
   return N;
 }
 
-function stake_tickets_for(idx: i32, amount: u128): void {
+function stake_tickets_of(idx: i32, amount: u128): void {
   // Add amount of tickets to the user in the position idx  
-  user_tickets[idx] = user_tickets[idx] + amount
-  accum_weights[idx] = accum_weights[idx] + amount
-
-  // Update the accumulative weights in the binary tree
-  while (idx != 0) {
-    idx = (idx - 1) / 2
-    accum_weights[idx] = accum_weights[idx] + amount
-  }
+  Tree.add_to(idx, amount)
 
   // Update pool tickets
   set_tickets(get_tickets() + amount)
@@ -127,7 +120,7 @@ export function deposit_and_stake(): void {
   }
 
   const max_amount = DAO.get_max_deposit()
-  assert(user_tickets[idx] + amount <= max_amount,
+  assert(Tree.tickets_of(idx) + amount <= max_amount,
          `Surpassed the limit of ${max_amount} tickets that a user can have`)
 
   // Deposit the money in the external pool
@@ -154,7 +147,7 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
 
   if(response.status == 1){
     // It worked, give tickets for the user
-    stake_tickets_for(idx, amount)
+    stake_tickets_of(idx, amount)
     return true
   }else{
     // It failed, return their money
@@ -179,7 +172,7 @@ export function unstake(amount: u128): bool {
   assert(idx != 0, "The GUARDIAN cannot unstake money!")
 
   // Check if it has enough money
-  assert(amount <= user_tickets[idx], "Not enough money")
+  assert(amount <= Tree.tickets_of(idx), "Not enough money")
 
   logging.log(`Unstaking ${amount} from user ${idx}`)
 
@@ -189,17 +182,11 @@ export function unstake(amount: u128): bool {
   // the user will be able to withdraw in the next withdraw_turn
   user_withdraw_turn[idx] = External.get_next_withdraw_turn()
 
-  // update user info
-  user_tickets[idx] = user_tickets[idx] - amount
-  user_unstaked[idx] = user_unstaked[idx] + amount
-
   // update binary tree
-  accum_weights[idx] = accum_weights[idx] - amount
+  Tree.remove_from(idx, amount)
 
-  while (idx != 0) {
-    idx = (idx - 1) / 2
-    accum_weights[idx] = accum_weights[idx] - amount
-  }
+  // update user info
+  user_unstaked[idx] = user_unstaked[idx] + amount
 
   return true
 }
@@ -245,30 +232,6 @@ export function withdraw_all_callback(idx: i32, amount: u128): void {
 
 
 // Raffle ---------------------------------------------------------------------
-export function find_winner(winning_ticket: u128): i32 {
-  // Gets the user with the winning ticket by searching in the binary tree.
-  // This function enumerates the users in pre-order. This does NOT affect
-  // the probability of winning, which is nbr_tickets_owned / tickets_total.
-  let idx: i32 = 0
-
-  while (true) {
-    let left: i32 = idx*2 + 1
-    let right: i32 = idx*2 + 2
-
-    if (winning_ticket < user_tickets[idx]) {
-      return idx
-    }
-
-    if (winning_ticket < user_tickets[idx] + accum_weights[left]) {
-      winning_ticket = winning_ticket - user_tickets[idx]
-      idx = left
-    } else {
-      winning_ticket = winning_ticket - user_tickets[idx] - accum_weights[left]
-      idx = right
-    }
-  }
-}
-
 export function raffle(): i32 {
   // This function needs 190TGas to work, but we do not
   // assert it since, if it fails, it rollsback
@@ -282,28 +245,23 @@ export function raffle(): i32 {
 
   assert(now >= next_raffle, "Not enough time has passed")
 
-  // By default the reserve wins
-  let winning_ticket: u128 = u128.Zero
-
-  if (accum_weights[0] > user_tickets[0]) {
-    // If there are more tickets than those in the reserve, then
-    // we have users. Raffle between them excluding the reserve
-    // i.e. exclude the tickets numbered from 0 to user_tickets[0]
-    winning_ticket = Utils.random_u128(user_tickets[0], accum_weights[0])
-  }
-
-  // Retrieve the winning user from the binary tree
-  const winner: i32 = find_winner(winning_ticket)
+  // Check if there is a prize to be raffled
   const prize: u128 = Prize.pool_prize()
+
+  if(prize == u128.Zero){ return 0 }
+
+  // Pick a random ticket as winner
+  const winner: i32 = Tree.choose_random_winner()
+  
 
   // A part goes to the reserve
   const fees:u128 = u128.from(DAO.get_pool_fees())
   const reserve: u128 = (prize * fees) / u128.from(100)
-  stake_tickets_for(0, reserve)
+  stake_tickets_of(0, reserve)
 
   // We give most to the user
   const user_prize: u128 = prize - reserve
-  stake_tickets_for(winner, user_prize)
+  stake_tickets_of(winner, user_prize)
 
   logging.log(`Reserve: ${reserve} - Prize: ${user_prize}`)
 
@@ -338,7 +296,7 @@ export function get_winners(from:i32, until:i32): Array<Winner> {
 export function give_from_reserve(to: string, amount: u128): void {
   assert(context.prepaidGas >= 120 * TGAS, "This function requires at least 120TGAS")
   assert(context.predecessor == DAO.get_guardian(), "Only the GUARDIAN can use the reserve")
-  assert(user_tickets[0] >= amount, "Not enough tickets in the reserve")
+  assert(Tree.tickets_of(0) >= amount, "Not enough tickets in the reserve")
 
   let idx = 0
   if (user_to_idx.contains(to)) {
@@ -350,10 +308,10 @@ export function give_from_reserve(to: string, amount: u128): void {
   }
 
   // Remove from reserve
-  user_tickets[0] -= amount
-  accum_weights[0] -= amount
-  set_tickets(get_tickets() - amount)  // stake_tickets_for adds them back
+  Tree.remove_from(0, amount)
+
+  set_tickets(get_tickets() - amount)  // stake_tickets_of adds them back
 
   // Give to the user, note that updating the tree can cost up to 90 TGAS
-  stake_tickets_for(idx, amount)
+  stake_tickets_of(idx, amount)
 }
