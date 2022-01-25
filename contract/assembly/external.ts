@@ -6,23 +6,20 @@ import * as Pool from './pool'
 
 
 // Semaphore to interact with external pool
-function is_interacting_with_external(): bool {
+function is_interacting(): bool {
   return storage.getPrimitive<bool>('interacting', false)
 }
 
-function start_interacting_with_external(): void {
+export function start_interacting(): void {
+  assert(!is_interacting(),
+         "Already interacting with the validator")
+
   storage.set<bool>('interacting', true)
 }
 
-function stop_interacting_with_external(): void {
+export function stop_interacting(): void {
   storage.set<bool>('interacting', false)
 }
-
-function fail_if_interacting_external(): void {
-  assert(is_interacting_with_external() == false,
-         "Please wait while we interact with the external pool")
-}
-
 
 // Getters - Setters
 export function get_to_unstake(): u128 {
@@ -32,8 +29,6 @@ export function get_to_unstake(): u128 {
 }
 
 export function set_to_unstake(tickets: u128): void {
-  // Used when someone asks to unstake tickets
-  fail_if_interacting_external()
   storage.set<u128>('to_unstake', tickets)
 }
 
@@ -63,8 +58,10 @@ export function interact_external(): void {
 
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  const external_action: string = storage.getPrimitive<string>('external_action',
-    'unstake')
+  const external_action: string = storage.getPrimitive<string>(
+    'external_action', 'unstake'
+  )
+  
   if (external_action == 'withdraw') {
     withdraw_external()
   } else {
@@ -80,9 +77,8 @@ function withdraw_external(): void {
   const withdraw_epoch: u64 = get_next_withdraw_epoch()
   assert(context.epochHeight >= withdraw_epoch, "Not enough time has passed")
 
-  // Check if we are already interacting, if not, set it to true
-  fail_if_interacting_external()
-  start_interacting_with_external()
+  // Check if we are already interacting, if not, set it to true()
+  start_interacting()
 
   // withdraw money from external pool
   const promise = ContractPromise.create(DAO.get_external_pool(), "withdraw_all", "",
@@ -101,7 +97,7 @@ export function withdraw_external_callback(): bool {
     storage.set<u64>('current_turn', get_current_turn() + 1)
   }
 
-  stop_interacting_with_external()
+  stop_interacting()
   return true
 }
 
@@ -116,17 +112,18 @@ function unstake_external(): void {
   assert(context.prepaidGas >= 300 * TGAS, "Not enough gas")
 
   // Check if we are already interacting, if not, set it to true
-  fail_if_interacting_external()
-  start_interacting_with_external()
-
   const to_unstake: u128 = get_to_unstake()
 
   if (to_unstake == u128.Zero) {
     logging.log("Nobody asked to unstake their tickets, we will wait")
-    stop_interacting_with_external()
   } else {
+    start_interacting()
+
     // There are tickets to unstake  
     const args: AmountArg = new AmountArg("", to_unstake)
+
+    // If someone wants to unstake, they will get the next turn
+    storage.set<u64>('next_withdraw_turn', get_next_withdraw_turn() + 1)
 
     const promise = ContractPromise.create(
       DAO.get_external_pool(), "unstake", args.encode(),
@@ -134,22 +131,19 @@ function unstake_external(): void {
 
     const callbackPromise = promise.then(
       context.contractName, "unstake_external_callback",
-      "", 120 * TGAS
+      args.encode(), 120 * TGAS
     )
 
     callbackPromise.returnAsResult();
   }
 }
 
-export function unstake_external_callback(): bool {
+export function unstake_external_callback(_user:string, amount:u128): bool {
   const response = Utils.get_callback_result()
 
   if (response.status == 1) {
-    // remove tickets from pool
-    const to_unstake: u128 = get_to_unstake()
-
     // update the number of tickets in the pool
-    Pool.set_tickets(Pool.get_tickets() - to_unstake)
+    Pool.set_tickets(Pool.get_tickets() - amount)
 
     // update the epoch in which we can withdraw
     storage.set<u64>('next_withdraw_epoch', context.epochHeight + UNSTAKE_EPOCH)
@@ -157,16 +151,14 @@ export function unstake_external_callback(): bool {
     // next time we want to withdraw
     storage.set<string>('external_action', 'withdraw')
 
-    // A turn passed
-    storage.set<u64>('next_withdraw_turn', get_next_withdraw_turn() + 1)
-
-    // We unstaked from external, set to_unstake back to 0
-    // Note: Here we don't use 'set_unstake' since it would
-    // fail because we are interacting with the external
-    storage.set<u128>('to_unstake', u128.Zero)
+    // Remove the amount we unstaked
+    set_to_unstake(get_to_unstake() - amount)
+  }else{
+    // Rollback next_withdraw_turn
+    storage.set<u64>('next_withdraw_turn', get_next_withdraw_turn() - 1)
   }
 
-  stop_interacting_with_external()
+  stop_interacting()
 
   return true
 }

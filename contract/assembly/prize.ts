@@ -2,6 +2,7 @@ import { storage, context, u128, ContractPromise, logging } from "near-sdk-as";
 import * as DAO from "./dao";
 import * as Utils from './utils'
 import * as Pool from './pool'
+import * as External from './external'
 import { TGAS } from './constants'
 import { User } from "./model"
 
@@ -23,7 +24,8 @@ class PoolArgs {
 }
 
 export function update_prize(): void {
-  assert(!DAO.is_emergency(), 'We will be back soon')
+  // TODO: Check how to move it to the external module
+  External.start_interacting()
 
   // Ask how many NEARs we have staked in the external pool
   const args: PoolArgs = new PoolArgs(context.contractName)
@@ -57,6 +59,8 @@ export function update_prize_callback(): bool {
 
   logging.log("prize: " + prize.toString())
   set_pool_prize(prize)
+
+  External.stop_interacting()
 
   return true
 }
