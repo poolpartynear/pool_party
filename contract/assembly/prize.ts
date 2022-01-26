@@ -40,10 +40,12 @@ export function update_prize(): void {
 }
 
 export function update_prize_callback(): bool {
+
   let info = Utils.get_callback_result()
 
   if (info.status != 1) {
     // We didn't manage to get information from the pool
+    External.stop_interacting()
     return false
   }
 
