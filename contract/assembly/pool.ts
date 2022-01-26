@@ -74,14 +74,6 @@ function add_new_user(user: string): i32{
   return N;
 }
 
-function give_tickets_to(idx: i32, amount: u128): void {
-  // Add amount of tickets to the user in the position idx  
-  Tree.add_to(idx, amount)
-
-  // Update pool tickets
-  set_tickets(get_tickets() + amount)
-}
-
 
 @nearBindgen
 class IdxAmount {
@@ -124,6 +116,11 @@ export function deposit_and_stake(): void {
          `Surpassed the limit of ${max_amount} tickets that a user can have`)
 
   // Deposit the money in the external pool
+
+  // Add the tickets to the pool (rollback if failed), but not yet to the user
+  // This is to keep the prize update consistent
+  set_tickets(get_tickets() + amount)
+
   // We add 100yn to cover the cost of staking in an external pool
   const promise: ContractPromise = ContractPromise.create(
     DAO.get_external_pool(), "deposit_and_stake", "{}", 50 * TGAS, amount + u128.from(100)
@@ -147,10 +144,12 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
 
   if(response.status == 1){
     // It worked, give tickets to the user
-    give_tickets_to(idx, amount)
+    Tree.add_to(idx, amount)
     return true
   }else{
-    // It failed, return their money
+    // It failed, remove tickets from the pool and return the money
+    set_tickets(get_tickets() - amount)
+
     logging.log("Failed attempt to deposit in the pool, returning money to the user")
     const account = idx_to_user.getSome(idx)
     ContractPromiseBatch.create(account).transfer(amount)
@@ -241,14 +240,16 @@ export function raffle(): i32 {
 
   // A part goes to the reserve
   const fees:u128 = u128.from(DAO.get_pool_fees())
-  const reserve: u128 = (prize * fees) / u128.from(100)
-  give_tickets_to(0, reserve)
+  const reserve_prize: u128 = (prize * fees) / u128.from(100)
+  Tree.add_to(0, reserve_prize)
 
   // We give most to the user
-  const user_prize: u128 = prize - reserve
-  give_tickets_to(winner, user_prize)
+  const user_prize: u128 = prize - reserve_prize
+  Tree.add_to(winner, user_prize)
 
-  logging.log(`Reserve: ${reserve} - Prize: ${user_prize}`)
+  set_tickets(get_tickets() + prize)
+
+  logging.log(`Reserve: ${reserve_prize} - Prize: ${user_prize}`)
 
   // Set next raffle time
   storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_raffle_wait())
@@ -295,8 +296,6 @@ export function give_from_reserve(to: string, amount: u128): void {
   // Remove from reserve
   Tree.remove_from(0, amount)
 
-  set_tickets(get_tickets() - amount)  // give_tickets_to adds them back
-
   // Give to the user, note that updating the tree can cost up to 90 TGAS
-  give_tickets_to(idx, amount)
+  Tree.add_to(idx, amount)
 }
