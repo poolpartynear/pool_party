@@ -173,6 +173,10 @@ describe('PoolParty', function () {
       expect(pool_info.prize).toBe(16)
     })
 
+    it("cannot update prize immediately after", async function(){
+      await expect(update_prize()).rejects.toThrow()
+    })
+
     it("correctly add more tickets to existing users", async function(){
       // Users buy tickets
       await deposit_and_stake(5, alice)
@@ -254,6 +258,9 @@ describe('PoolParty', function () {
     it("on a raffle, the reserve gets a 5% and the winner the rest", async function(){
       let current_balances = [1, 9, 11, 1.123456 - 0.001]
       let prize = 10+12.123+1.123456+1
+
+      const pool_info = await get_pool_info()
+
       let winner = await raffle()
 
       let reserve_prize = prize * 0.05
@@ -270,6 +277,10 @@ describe('PoolParty', function () {
         balance = await get_account(users[i])
         expect(balance.staked_balance).toBeCloseTo(expected)
       }
+
+      const new_pool_info = await get_pool_info()
+      expect(new_pool_info.total_staked).toBeCloseTo(pool_info.total_staked + prize, 1,
+             "Total tickets uncorrectly updated")
     })
 
     it("ERROR: the guardian cannot withdraw money", async function(){

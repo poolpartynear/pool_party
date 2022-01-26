@@ -17,11 +17,21 @@ describe('Deposit Error PoolParty', function () {
     }
 
     get_account = async function(account_id, contract=contract_A){
-      let info = await contract.get_account({account_id})
-      info.staked_balance = parseFloat(formatNearAmount(info.staked_balance))
-      info.unstaked_balance = parseFloat(formatNearAmount(info.unstaked_balance))
-      info.available_when = Number(info.available_when)
-      return info
+      let account_info = await contract.get_account({account_id})
+      account_info.staked_balance = parseFloat(formatNearAmount(account_info.staked_balance))
+      account_info.unstaked_balance = parseFloat(formatNearAmount(account_info.unstaked_balance))
+      account_info.available_when = Number(account_info.available_when)
+      return account_info
+    }
+
+    get_pool_info = async function(contract=contract_A){
+      let result = await contract.account.functionCall(
+        nearConfig.contractName, 'get_pool_info', {}, 300000000000000, 0
+      )
+      info = nearlib.providers.getTransactionLastResult(result)
+      info.total_staked = parseFloat(formatNearAmount(info.total_staked))
+      info.prize = parseFloat(formatNearAmount(info.prize))
+      return info  
     }
 
     deposit_and_stake = async function(amount, contract){
@@ -48,11 +58,14 @@ describe('Deposit Error PoolParty', function () {
       
       expect(balance).toBeCloseTo(new_balance, 1)
 
-      const info = await get_account(user_A)
-      expect(info.staked_balance).toBe(0, "user has tickets")
-      expect(info.unstaked_balance).toBe(0, "user has unstaked_balance")
-      expect(info.available).toBe(false, "user can withdraw")
-    })
+      const account_info = await get_account(user_A)
+      expect(account_info.staked_balance).toBe(0, "user has tickets")
+      expect(account_info.unstaked_balance).toBe(0, "user has unstaked_balance")
+      expect(account_info.available).toBe(false, "user can withdraw")
 
+      const pool_info = await get_pool_info()
+      expect(pool_info.total_staked).toBe(0, "pool has tickets")
+      expect(pool_info.prize).toBe(0, "pool has prize")
+    })
   });
 });
