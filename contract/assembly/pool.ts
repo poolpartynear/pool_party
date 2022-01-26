@@ -74,7 +74,7 @@ function add_new_user(user: string): i32{
   return N;
 }
 
-function stake_tickets_of(idx: i32, amount: u128): void {
+function give_tickets_to(idx: i32, amount: u128): void {
   // Add amount of tickets to the user in the position idx  
   Tree.add_to(idx, amount)
 
@@ -146,8 +146,8 @@ export function deposit_and_stake_callback(idx: i32, amount: u128): bool {
   const response = Utils.get_callback_result()
 
   if(response.status == 1){
-    // It worked, give tickets for the user
-    stake_tickets_of(idx, amount)
+    // It worked, give tickets to the user
+    give_tickets_to(idx, amount)
     return true
   }else{
     // It failed, return their money
@@ -242,11 +242,11 @@ export function raffle(): i32 {
   // A part goes to the reserve
   const fees:u128 = u128.from(DAO.get_pool_fees())
   const reserve: u128 = (prize * fees) / u128.from(100)
-  stake_tickets_of(0, reserve)
+  give_tickets_to(0, reserve)
 
   // We give most to the user
   const user_prize: u128 = prize - reserve
-  stake_tickets_of(winner, user_prize)
+  give_tickets_to(winner, user_prize)
 
   logging.log(`Reserve: ${reserve} - Prize: ${user_prize}`)
 
@@ -295,8 +295,8 @@ export function give_from_reserve(to: string, amount: u128): void {
   // Remove from reserve
   Tree.remove_from(0, amount)
 
-  set_tickets(get_tickets() - amount)  // stake_tickets_of adds them back
+  set_tickets(get_tickets() - amount)  // give_tickets_to adds them back
 
   // Give to the user, note that updating the tree can cost up to 90 TGAS
-  stake_tickets_of(idx, amount)
+  give_tickets_to(idx, amount)
 }
