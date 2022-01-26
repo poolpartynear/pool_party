@@ -44,10 +44,6 @@ export function withdraw_all(): void{
   Pool.withdraw_all()
 }
 
-export function withdraw_all_callback(idx: i32, amount: u128): void{
-  Pool.withdraw_all_callback(idx, amount)
-}
-
 // Interact with external
 export function interact_external(): void {
   External.interact_external()

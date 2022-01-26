@@ -214,20 +214,9 @@ export function withdraw_all(): void {
   // Send money to the user and callback to see it succeded
   const args: IdxAmount = new IdxAmount(idx, amount)
 
+  logging.log(`Sending ${amount} to ${context.predecessor}`)
   ContractPromiseBatch.create(context.predecessor)
     .transfer(amount)
-    .then(context.contractName)
-    .function_call("withdraw_all_callback", args.encode(), u128.Zero, 20 * TGAS)
-}
-
-export function withdraw_all_callback(idx: i32, amount: u128): void {
-  const response = Utils.get_callback_result()
-
-  if (response.status == 1) {
-    logging.log(`Sent ${amount} to ${idx_to_user.getSome(idx)}`)
-  } else {
-    user_unstaked[idx] = amount  // It failed, add unstaked back to user
-  }
 }
 
 
@@ -252,7 +241,6 @@ export function raffle(): i32 {
 
   // Pick a random ticket as winner
   const winner: i32 = Tree.choose_random_winner()
-  
 
   // A part goes to the reserve
   const fees:u128 = u128.from(DAO.get_pool_fees())
