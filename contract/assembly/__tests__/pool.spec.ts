@@ -41,7 +41,7 @@ describe("User Handling", () => {
 
     // Poor man's callback simulation
     VMContext.setPredecessor_account_id(Context.contractName)
-    deposit_and_stake_callback(0, u128.One)
+    deposit_and_stake_callback(0, u128.One*NEAR)
 
     for(let i=1; i < 3; i++){
       set_context(i.toString(), u128.from(i+1))
@@ -49,15 +49,15 @@ describe("User Handling", () => {
 
       // Poor man's callback simulation
       VMContext.setPredecessor_account_id(Context.contractName)
-      deposit_and_stake_callback(i, u128.from(i+1))
+      deposit_and_stake_callback(i, u128.from(i+1)*NEAR)
     }
 
     VMContext.setPredecessor_account_id("1")
     VMContext.setPrepaid_gas(300000000000000)
-    unstake(u128.One)
+    unstake(u128.One*NEAR)
 
-    expect(get_tickets()).toBe(u128.from(6), "Tickets updated wrong")
-    expect(get_to_unstake()).toBe(u128.One, "To unstake updated wrong")
+    expect(get_tickets()).toBe(u128.from(6)*NEAR, "Tickets updated wrong")
+    expect(get_to_unstake()).toBe(u128.One*NEAR, "To unstake updated wrong")
   })
 })
 
@@ -74,7 +74,7 @@ describe("Binary Tree", () => {
     set_context('theguardian', u128.One)
     deposit_and_stake()
 
-    // Poor man's callback simulation
+    // Poor man's callback simulationd
     VMContext.setPredecessor_account_id(Context.contractName)
     deposit_and_stake_callback(0, u128.One)
 
