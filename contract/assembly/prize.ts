@@ -1,9 +1,9 @@
-import { storage, context, u128, ContractPromise, logging } from "near-sdk-as";
+import { storage, context, u128, ContractPromise, logging, env } from "near-sdk-as";
 import * as DAO from "./dao";
 import * as Utils from './utils'
 import * as Pool from './pool'
 import * as External from './external'
-import { TGAS } from './constants'
+import { PRIZE_UPDATE_INTERVAL, TGAS } from './constants'
 import { User } from "./model"
 
 
@@ -24,6 +24,12 @@ class PoolArgs {
 }
 
 export function update_prize(): void {
+  // Control that the updates are done with some minimum interval
+  const now: u64 = env.block_timestamp()
+  const next_update: u64 = storage.getPrimitive<u64>('next_update', 0)
+
+  assert(now >= next_update, "Not enough time has passed")
+
   // TODO: Check how to move it to the external module
   External.start_interacting()
 
@@ -61,6 +67,9 @@ export function update_prize_callback(): bool {
 
   logging.log("prize: " + prize.toString())
   set_pool_prize(prize)
+
+  // Update last_updated time
+  storage.set<u64>('next_update', env.block_timestamp() + PRIZE_UPDATE_INTERVAL)
 
   External.stop_interacting()
 
