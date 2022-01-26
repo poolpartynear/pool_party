@@ -211,9 +211,7 @@ export function withdraw_all(): void {
   // Set user's unstake amount to 0 to avoid reentracy attacks
   user_unstaked[idx] = u128.Zero
 
-  // Send money to the user and callback to see it succeded
-  const args: IdxAmount = new IdxAmount(idx, amount)
-
+  // Send money to the user, always succeed
   logging.log(`Sending ${amount} to ${context.predecessor}`)
   ContractPromiseBatch.create(context.predecessor)
     .transfer(amount)
