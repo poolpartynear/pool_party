@@ -213,8 +213,7 @@ export function withdraw_all(): void {
 
   // Send money to the user, always succeed
   logging.log(`Sending ${amount} to ${context.predecessor}`)
-  ContractPromiseBatch.create(context.predecessor)
-    .transfer(amount)
+  ContractPromiseBatch.create(context.predecessor).transfer(amount)
 }
 
 
