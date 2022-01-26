@@ -1,10 +1,11 @@
-const {create_contract} = require('./utils')
+const {create_contract, deploy_mock_validator} = require('./utils')
 const { utils: {format: { formatNearAmount, parseNearAmount } }, } = nearAPI
 
-describe('Emergency-PoolParty', function () {
+describe('An emergency in PoolParty', function () {
   let contract_A, DAO
   const user_A = `alice.${nearConfig.contractName}`
   const dao_address = `dao.${nearConfig.contractName}`
+  const pool_address = `validator.${nearConfig.contractName}`
 
   jasmine.DEFAULT_TIMEOUT_INTERVAL = 1200000;
 
@@ -12,7 +13,9 @@ describe('Emergency-PoolParty', function () {
     contract_A = await create_contract(user_A)
     DAO = await create_contract(dao_address)
 
-    get_account = async function(account_id, contract=alice){
+    await deploy_mock_validator(pool_address)
+
+    get_account = async function(account_id, contract=contract_A){
       let info = await contract.get_account({account_id})
       info.staked_balance = parseFloat(formatNearAmount(info.staked_balance))
       info.unstaked_balance = parseFloat(formatNearAmount(info.unstaked_balance))
@@ -61,15 +64,15 @@ describe('Emergency-PoolParty', function () {
 
   describe('DAO', function () {
     it("inits", async function(){
-      await contract_A.init({pool:'pool', guardian:'guardian', dao: dao_address})
+      await contract_A.init({pool:pool_address, guardian:user_A, dao: dao_address})
     })
 
     it("ERROR: the user cannot start an state of emergency", async function(){
-      await expect(contract_A.start_emergency()).rejects.toThrow()
+      await expect(contract_A.emergency_start()).rejects.toThrow()
     })
 
     it("the DAO can declare emergency", async function(){
-      await expect(DAO.start_emergency()).resolves.not.toThrow()
+      await expect(DAO.emergency_start()).resolves.not.toThrow()
     })
 
     it("ERROR: User cannot deposit during emergency", async function(){
@@ -93,11 +96,11 @@ describe('Emergency-PoolParty', function () {
     })
 
     it("ERROR: the user cannot stop an state of emergency", async function(){
-      await expect(contract_A.stop_emergency()).rejects.toThrow()
+      await expect(contract_A.emergency_stop()).rejects.toThrow()
     })    
 
     it("the DAO can stop the state of emergency", async function(){
-      await expect(DAO.stop_emergency()).resolves.not.toThrow()
+      await expect(DAO.emergency_stop()).resolves.not.toThrow()
     })
 
     it("The user can deposit again", async function(){

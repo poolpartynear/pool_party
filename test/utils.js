@@ -98,4 +98,4 @@ async function deploy_mock_validator(accountId){
 	);
 }
 
-module.exports = {create_contract, deploy_mock_validator}
+module.exports = {create_contract, deploy_mock_validator, getAccount}
