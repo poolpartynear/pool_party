@@ -45,27 +45,23 @@ describe("Random", () => {
     let trials = 100
     let min = 3
     let max = 13
-    let total = 15
     let numbers = new Array<i32>()
     
-    for(let i=0; i < total; i++){numbers.push(0)}
+    for(let i=0; i <= max; i++){numbers.push(0)}
 
     for(let i=0; i < trials; i++){
       let rnd:u128 = random_u128(u128.from(min), u128.from(max))
 
       expect(rnd >= u128.from(min) && u128.from(max) > rnd)
 
-      for(let j=0; j < total; j++){
+      for(let j=min; j < max; j++){
         if(rnd == u128.from(j)){ numbers[j] = numbers[j] + 1 }
       }
     }
 
-    for(let i=0; i < min; i++){ expect(numbers[i] == 0 ).toBe(true) }
-
+    // Check the distribution is correct
     for(let i=min; i < max; i++){
       expect(numbers[i] > 5 && numbers[i] < 15).toBe(true)
     }
-
-    for(let i=max; i < total; i++){ expect(numbers[i] == 0 ).toBe(true) }
   });
 });
