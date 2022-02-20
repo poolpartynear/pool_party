@@ -1,4 +1,4 @@
-import { random_u128 } from "../tree"
+import { random_u128 } from "../users"
 import { u128 } from "near-sdk-as"
 
 

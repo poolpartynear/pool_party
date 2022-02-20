@@ -1,7 +1,6 @@
 import { storage, context, u128, ContractPromise, logging } from "near-sdk-as";
-import { TGAS, UNSTAKE_EPOCH } from './constants'
+import { TGAS, UNSTAKE_EPOCH, get_callback_result } from './constants'
 import * as DAO from './dao'
-import * as Utils from './utils'
 import * as Pool from './pool'
 
 
@@ -12,7 +11,7 @@ function is_interacting(): bool {
 
 export function start_interacting(): void {
   assert(!is_interacting(),
-         "Already interacting with the validator")
+    "Already interacting with the validator")
 
   storage.set<bool>('interacting', true)
 }
@@ -61,7 +60,7 @@ export function interact_external(): void {
   const external_action: string = storage.getPrimitive<string>(
     'external_action', 'unstake'
   )
-  
+
   if (external_action == 'withdraw') {
     withdraw_external()
   } else {
@@ -89,7 +88,7 @@ function withdraw_external(): void {
 }
 
 export function withdraw_external_callback(): bool {
-  const response = Utils.get_callback_result()
+  const response = get_callback_result()
 
   if (response.status == 1) {
     // Everything worked, next time we want to unstake
@@ -111,12 +110,12 @@ class AmountArg {
 function unstake_external(): void {
   assert(context.prepaidGas >= 300 * TGAS, "Not enough gas")
 
-  // Check if we are already interacting, if not, set it to true
   const to_unstake: u128 = get_to_unstake()
 
   if (to_unstake == u128.Zero) {
     logging.log("Nobody asked to unstake their tickets, we will wait")
   } else {
+    // Check if we are already interacting, if not, set it to true
     start_interacting()
 
     // There are tickets to unstake  
@@ -138,8 +137,8 @@ function unstake_external(): void {
   }
 }
 
-export function unstake_external_callback(amount:u128): bool {
-  const response = Utils.get_callback_result()
+export function unstake_external_callback(amount: u128): bool {
+  const response = get_callback_result()
 
   if (response.status == 1) {
     // update the number of tickets in the pool
@@ -153,7 +152,7 @@ export function unstake_external_callback(amount:u128): bool {
 
     // Remove the amount we unstaked
     set_to_unstake(get_to_unstake() - amount)
-  }else{
+  } else {
     // Rollback next_withdraw_turn
     storage.set<u64>('next_withdraw_turn', get_next_withdraw_turn() - 1)
   }

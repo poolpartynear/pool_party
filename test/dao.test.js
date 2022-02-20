@@ -63,7 +63,7 @@ describe('DAO-PoolParty', function () {
     it("the DAO can change the max deposit", async function(){
       let max_deposit = await contract_A.get_max_deposit()
       max_deposit = formatNearAmount(max_deposit)
-      expect(max_deposit).toBe("1,000,000")
+      expect(max_deposit).toBe("1,000")
 
       let new_max_deposit = "20000"
       new_max_deposit = parseNearAmount(new_max_deposit)
@@ -76,7 +76,7 @@ describe('DAO-PoolParty', function () {
 
     it("the DAO can change the max number of users", async function(){
       users = await contract_A.get_max_users()
-      expect(users).toBe(8100)
+      expect(users).toBe(8191)
 
       await DAO.change_max_users({max_users: 1000})
 

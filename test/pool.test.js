@@ -273,7 +273,7 @@ describe('PoolParty', function () {
 
       for(i=1; i<4; i++){
         expected = current_balances[i]
-        expected += (i == winner)? winner_prize : 0
+        expected += (users[i] == winner)? winner_prize : 0
         balance = await get_account(users[i])
         expect(balance.staked_balance).toBeCloseTo(expected)
       }
@@ -281,10 +281,6 @@ describe('PoolParty', function () {
       const new_pool_info = await get_pool_info()
       expect(new_pool_info.total_staked).toBeCloseTo(pool_info.total_staked + prize, 1,
              "Total tickets uncorrectly updated")
-    })
-
-    it("ERROR: the guardian cannot withdraw money", async function(){
-      await expect(unstake(1, guardian)).rejects.toThrow()
     })
 
     it("ERROR: cannot raffle again, it has to wait", async function(){

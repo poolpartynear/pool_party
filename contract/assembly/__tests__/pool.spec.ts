@@ -1,11 +1,11 @@
 import { deposit_and_stake_callback, deposit_and_stake, unstake,
          get_accum_weights, init } from '..';
 import { get_tickets } from '../pool';
-import { find_user_with_ticket } from '../tree'
+import { find_user_with_ticket } from '../users'
 import { get_to_unstake } from '../external';
 
 import { Context, u128, VMContext } from "near-sdk-as";
-import { DAO, get_external_pool, get_guardian } from '../dao';
+import { DAO, get_external_pool, get_guardian, change_min_for_storage} from '../dao';
 
 
 const NEAR: u128 = u128.from("1000000000000000000000000")
@@ -41,7 +41,7 @@ describe("User Handling", () => {
 
     // Poor man's callback simulation
     VMContext.setPredecessor_account_id(Context.contractName)
-    deposit_and_stake_callback(0, u128.One*NEAR)
+    deposit_and_stake_callback("theguardian", u128.One*NEAR)
 
     for(let i=1; i < 3; i++){
       set_context(i.toString(), u128.from(i+1))
@@ -49,7 +49,7 @@ describe("User Handling", () => {
 
       // Poor man's callback simulation
       VMContext.setPredecessor_account_id(Context.contractName)
-      deposit_and_stake_callback(i, u128.from(i+1)*NEAR)
+      deposit_and_stake_callback(i.toString(), u128.from(i+1)*NEAR)
     }
 
     VMContext.setPredecessor_account_id("1")
@@ -70,13 +70,17 @@ describe("Binary Tree", () => {
 
     init('external_pool', 'theguardian', 'dao' )  // init the contract
 
+    // Remove min storage for testing purposes
+    VMContext.setPredecessor_account_id("dao")
+    change_min_for_storage(u128.Zero)
+
     // The guardian deposits first
     set_context('theguardian', u128.One)
     deposit_and_stake()
 
     // Poor man's callback simulationd
     VMContext.setPredecessor_account_id(Context.contractName)
-    deposit_and_stake_callback(0, u128.One)
+    deposit_and_stake_callback('theguardian', u128.One)
 
     for(let i=1; i < subjects; i++){
       set_context(i.toString(), u128.from(i+1))
@@ -84,7 +88,7 @@ describe("Binary Tree", () => {
 
       // Poor man's callback simulation
       VMContext.setPredecessor_account_id(Context.contractName)
-      deposit_and_stake_callback(i, u128.from(i+1))
+      deposit_and_stake_callback(i.toString(), u128.from(i+1))
     }
 
     let expected_weights:Array<i32> = [55, 38, 16, 21, 15, 6, 7, 8, 9, 10]
@@ -94,9 +98,9 @@ describe("Binary Tree", () => {
     }
 
     // Modify some of them
-    deposit_and_stake_callback(5, u128.from(2))
+    deposit_and_stake_callback("5", u128.from(2))
 
-    deposit_and_stake_callback(7, u128.from(1))
+    deposit_and_stake_callback("7", u128.from(1))
    
     expected_weights = [58, 39, 18, 22, 15, 8, 7, 9, 9, 10]
 
@@ -104,7 +108,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    deposit_and_stake_callback(3, u128.from(3))
+    deposit_and_stake_callback("3", u128.from(3))
 
     expected_weights = [61, 42, 18, 25, 15, 8, 7, 9, 9, 10]
     
@@ -112,7 +116,7 @@ describe("Binary Tree", () => {
       expect(get_accum_weights(i)).toBe(u128.from(expected_weights[i]))
     }
 
-    deposit_and_stake_callback(0, u128.from(1))
+    deposit_and_stake_callback("theguardian", u128.from(1))
 
     expected_weights = [62, 42, 18, 25, 15, 8, 7, 9, 9, 10]
 
