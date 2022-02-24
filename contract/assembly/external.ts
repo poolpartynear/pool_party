@@ -1,5 +1,5 @@
 import { storage, context, u128, ContractPromise, logging } from "near-sdk-as";
-import { TGAS, UNSTAKE_EPOCH, get_callback_result } from './constants'
+import { TGAS, get_callback_result } from './aux'
 import * as DAO from './dao'
 import * as Pool from './pool'
 
@@ -145,7 +145,7 @@ export function unstake_external_callback(amount: u128): bool {
     Pool.set_tickets(Pool.get_tickets() - amount)
 
     // update the epoch in which we can withdraw
-    storage.set<u64>('next_withdraw_epoch', context.epochHeight + UNSTAKE_EPOCH)
+    storage.set<u64>('next_withdraw_epoch', context.epochHeight + DAO.get_epoch_wait())
 
     // next time we want to withdraw
     storage.set<string>('external_action', 'withdraw')

@@ -2,7 +2,7 @@ import { storage, context, u128, ContractPromise, logging, env } from "near-sdk-
 import * as DAO from "./dao";
 import * as Pool from './pool'
 import * as External from './external'
-import { TGAS, get_callback_result } from './constants'
+import { TGAS, get_callback_result } from './aux'
 import { User } from "./users"
 
 

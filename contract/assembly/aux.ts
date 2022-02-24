@@ -3,9 +3,6 @@ import { context, ContractPromise, ContractPromiseResult, u128 } from "near-sdk-
 // Unit of TGAS
 export const TGAS: u64 = 1000000000000
 
-// Amount of epochs to wait before unstaking again
-export const UNSTAKE_EPOCH: u64 = 4
-
 // Check that callback functions are called by this contract
 // and return results
 export function get_callback_result(): ContractPromiseResult {

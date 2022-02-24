@@ -22,6 +22,9 @@ const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 // Minimum deposit needed for keeping storage (0.1 NEAR)
 const MIN_DEPOSIT_FOR_STORAGE: u128 = u128.from("100000000000000000000000")
 
+// Amount of epochs to wait before unstaking (changed for testing)
+const UNSTAKE_EPOCH: u64 = 4
+
 
 export function init(pool: string, guardian: string, dao: string): bool {
   // Initialize the POOL, GUARDIAN and DAO
@@ -89,6 +92,13 @@ export function get_min_for_storage(): u128 {
   return MIN_DEPOSIT_FOR_STORAGE
 }
 
+export function get_epoch_wait(): u64{
+  if (storage.contains('dao_epoch_wait')) {
+    return storage.getSome<u64>('dao_epoch_wait')
+  }
+  return UNSTAKE_EPOCH
+}
+
 // Setters ---------------------------------------------------
 function fail_if_not_dao(): void {
   assert(context.predecessor == DAO(), "Only the DAO can call this function")
@@ -132,6 +142,12 @@ export function change_min_deposit(new_min_deposit: u128): bool {
 export function change_min_for_storage(new_min_deposit: u128): bool {
   fail_if_not_dao()
   storage.set<u128>('dao_min_for_storage', new_min_deposit)
+  return true
+}
+
+export function change_epoch_wait(nbr_of_epoch_to_wait: u64): bool {
+  fail_if_not_dao()
+  storage.set<u64>('dao_epoch_wait', nbr_of_epoch_to_wait)
   return true
 }
 
