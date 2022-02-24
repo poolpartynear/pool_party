@@ -37,12 +37,13 @@ describe('PoolParty', function () {
       await dao.change_epoch_wait(0)
     })
 
-    it("Correctly removes user if they have nothing staked", async function () {
+    it("Correctly removes user if they don't have enough staked", async function () {
       await guardian.deposit_and_stake(1)
       await alice.deposit_and_stake(5)
       await bob.deposit_and_stake(10)
 
-      await bob.unstake(10)
+      // The minimum deposit is 1 NEAR, so unstaking 9.5 should result in a removal of everything
+      await bob.unstake(9.5)
 
       // Check the unstake worked correctly
       let bob_pool = await bob.get_account()
