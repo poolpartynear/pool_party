@@ -136,7 +136,7 @@ export function unstake(amount: u128): bool {
   // Check if it has enough money
   assert(amount <= user_tickets, "Not enough money")
 
-  if (user_tickets - amount < DAO.get_min_for_storage()) {
+  if (user_tickets - amount < DAO.get_min_deposit()) {
     logging.log("Unstaking all from user, since they cannot pay storage")
     amount = user_tickets
   }

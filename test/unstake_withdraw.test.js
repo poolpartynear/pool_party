@@ -1,6 +1,5 @@
-const fs = require("fs");
-const {create_contract, deploy_mock_validator, near} = require('./utils')
-const { utils: {format: { formatNearAmount, parseNearAmount } }, } = nearAPI
+const { deploy_mock_validator } = require('./utils')
+const { create_user } = require('./methods')
 
 describe('PoolParty', function () {
   const guardian_address = `guardian.${nearConfig.contractName}`
@@ -11,139 +10,175 @@ describe('PoolParty', function () {
   const bob_address = `bob.${nearConfig.contractName}`
   const cloud_address = `cloud.${nearConfig.contractName}`
 
+  const CALL_FEE = 0.03
+
   let guardian, dao, alice, bob, cloud
 
   jest.setTimeout(1200000);
 
   beforeAll(async function () {
-    guardian = await create_contract(guardian_address)
-    dao = await create_contract(dao_address)
-    alice = await create_contract(alice_address)
-    bob = await create_contract(bob_address)
-    cloud = await create_contract(cloud_address)
+    guardian = await create_user(guardian_address)
+    dao = await create_user(dao_address)
+    alice = await create_user(alice_address)
+    bob = await create_user(bob_address)
+    cloud = await create_user(cloud_address)
 
     // We use as pool a mock validator, it has the same interface as a validator
     // but it doubles your deposits, i.e. you deposit 1N -> you get 2N available
     await deploy_mock_validator(pool_address)
-
-    init = async function(pool, guardian, dao, contract=alice){
-      return await contract.init({pool, guardian, dao})
-    }
-
-    get_account_balance = async function(account_id){
-      let account = await near.account(account_id)
-      let balance = await account.getAccountBalance()
-      balance.total = parseFloat(formatNearAmount(balance.total))
-      balance.available = parseFloat(formatNearAmount(balance.available))
-      return balance
-    }
-
-    deposit_and_stake = async function(amount, contract){
-      amount = parseNearAmount(amount.toString())
-      return await contract.account.functionCall(
-        nearConfig.contractName, 'deposit_and_stake', {}, 300000000000000, amount
-      )
-    }
-
-    unstake = async function(amount, contract){
-      amount = parseNearAmount(amount.toString())
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'unstake', {amount:amount}, 300000000000000, 0
-      )
-      return nearlib.providers.getTransactionLastResult(result)
-    }
-
-    interact_external = async function(contract){
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'interact_external', {}, 300000000000000, 0
-      )
-      return nearlib.providers.getTransactionLastResult(result)
-    }
-
-    withdraw_all = async function(contract){
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'withdraw_all', {}, 300000000000000, 0
-      )
-      return nearlib.providers.getTransactionLastResult(result)
-    }
-
-    get_account = async function(account_id, contract=alice){
-      let info = await contract.get_account({account_id})
-      info.staked_balance = parseFloat(formatNearAmount(info.staked_balance))
-      info.unstaked_balance = parseFloat(formatNearAmount(info.unstaked_balance))
-      info.available_when = Number(info.available_when)
-      return info
-    }
-
-    get_pool_info = async function(contract=alice){
-      let result = await contract.account.functionCall(
-        nearConfig.contractName, 'get_pool_info', {}, 300000000000000, 0
-      )
-      info = nearlib.providers.getTransactionLastResult(result)
-      info.total_staked = parseFloat(formatNearAmount(info.total_staked))
-      info.prize = parseFloat(formatNearAmount(info.prize))
-      return info  
-    }
-
-
   });
 
   describe('Pool', function () {
 
-    it("initializes", async function(){
-      let cloud_balance = await get_account_balance(cloud_address)
-      let res = await init(pool_address, guardian_address, dao_address)
+    it("initializes", async function () {
+      let res = await guardian.init(pool_address, guardian_address, dao_address)
       expect(res).toBe(true)
 
-      await dao.change_epoch_wait({"epoch_wait":"0"})
+      await dao.change_epoch_wait(0)
     })
 
-    it("allows people to interact", async function(){
-      await deposit_and_stake(1, guardian)
-      await deposit_and_stake(5, alice)
-      await deposit_and_stake(10, bob)
+    it("Correctly removes user if they have nothing staked", async function () {
+      await guardian.deposit_and_stake(1)
+      await alice.deposit_and_stake(5)
+      await bob.deposit_and_stake(10)
 
-      await unstake(1, alice)
-      await unstake(10, bob)
+      await bob.unstake(10)
 
-      await interact_external(bob) // unstake
-      await interact_external(bob) // withdraw
+      // Check the unstake worked correctly
+      let bob_pool = await bob.get_account()
+      expect(bob_pool.staked_balance).toBe(0)
+      expect(bob_pool.unstaked_balance).toBe(10)
+      expect(bob_pool.available_when).toBe(1)
 
-      await withdraw_all(bob)
+      await bob.interact_external() // unstake
 
-      let bob_balance = await get_account_balance(bob_address)
-      expect(bob_balance.total).toBeCloseTo(20)
+      await alice.unstake(1)
 
-      await deposit_and_stake(1, dao)
-      let users = await contract.number_of_users()
+      // Check the unstake worked correctly
+      let alice_pool = await alice.get_account()
+      expect(alice_pool.staked_balance).toBe(4)
+      expect(alice_pool.unstaked_balance).toBe(1)
+      expect(alice_pool.available_when).toBe(2)
+
+      await bob.interact_external() // withdraw
+
+      let bob_balance = await bob.wallet_balance()
+      expect(bob_balance.total).toBeCloseTo(10 - CALL_FEE * 4, 1)
+
+      await bob.withdraw_all()
+
+      // Bob should have more money
+      let new_bob_balance = await bob.wallet_balance()
+      expect(new_bob_balance.total).toBeCloseTo(bob_balance.total + 10 - CALL_FEE, 1)
+
+      // Bob should have nothing in the pool
+      bob_pool = await bob.get_account()
+      expect(bob_pool.staked_balance).toBe(0)
+      expect(bob_pool.unstaked_balance).toBe(0)
+
+      // Alice should have changed only the `available when` field
+      alice_pool = await alice.get_account()
+      expect(alice_pool.staked_balance).toBe(4)
+      expect(alice_pool.unstaked_balance).toBe(1)
+      expect(alice_pool.available_when).toBe(1)
+
+      // A new user should take Bob's place
+      await dao.deposit_and_stake(1)
+
+      let users = await dao.number_of_users()
       expect(users).toBe(3)
 
-      let dao_pool = await get_account(dao_address)
+      let dao_pool = await dao.get_account()
       expect(dao_pool.staked_balance).toBe(1)
       expect(dao_pool.unstaked_balance).toBe(0)
 
-      let bob_pool = await get_account(bob_address)
+      // Bob should still have no deposits
+      bob_pool = await bob.get_account()
       expect(bob_pool.staked_balance).toBe(0)
       expect(bob_pool.unstaked_balance).toBe(0)
     })
 
-    it("allows people to interact", async function(){
-      await deposit_and_stake(5, cloud)
+    it("Doesn't allow to withdraw before 2 turns", async function () {
+      await cloud.deposit_and_stake(5)
 
-      await unstake(1, cloud)
+      // A new user should be created
+      let users = await dao.number_of_users()
+      expect(users).toBe(4)
 
-      await expect(withdraw_all(cloud)).rejects.toThrow()
+      await cloud.unstake(1)
 
-      await interact_external(bob)
+      await expect(cloud.withdraw_all()).rejects.toThrow()
 
-      await expect(withdraw_all(cloud)).rejects.toThrow()
+      await bob.interact_external()
 
-      await interact_external(bob) // withdraw
+      await expect(cloud.withdraw_all()).rejects.toThrow()
 
-      await withdraw_all(cloud)
+      await bob.interact_external() // withdraw
 
-      let cloud_balance = await get_account_balance(cloud_address)
-      expect(cloud_balance.total).toBeCloseTo(16)
+      await cloud.withdraw_all()
+
+      let cloud_balance = await cloud.wallet_balance()
+      expect(cloud_balance.total).toBeCloseTo(16 - 4 * CALL_FEE, 1)
+
+      let cloud_pool = await cloud.get_account()
+      expect(cloud_pool.staked_balance).toBe(4)
+      expect(cloud_pool.unstaked_balance).toBe(0)
+      expect(cloud_pool.available_when).toBe(0)
+
+      // Alice can also withdraw
+      await alice.withdraw_all()
     })
-  }); 
+
+    it("Restart user wait time if they ask to withdraw again", async function () {
+      let cloud_balance = await cloud.wallet_balance()
+
+      await cloud.unstake(1)
+
+      // Cloud needs to wait 1 turn
+      let cloud_pool = await cloud.get_account()
+      expect(cloud_pool.staked_balance).toBe(3)
+      expect(cloud_pool.unstaked_balance).toBe(1)
+      expect(cloud_pool.available_when).toBe(1)
+
+      await bob.interact_external() //unstake
+
+      // cloud unstakes again
+      await cloud.unstake(1)
+
+      cloud_pool = await cloud.get_account()
+      expect(cloud_pool.staked_balance).toBe(2)
+      expect(cloud_pool.unstaked_balance).toBe(2)
+      expect(cloud_pool.available_when).toBe(2)
+
+      await bob.interact_external() // withdraw
+
+      // cloud cannot remove the money, since it asked for unstake
+      await expect(cloud.withdraw_all()).rejects.toThrow()
+
+      await bob.interact_external() // unstake
+      await bob.interact_external() // withdraw
+
+      // cloud deposits and ask to unstake again
+      await cloud.deposit_and_stake(2)
+      await cloud.unstake(1)
+
+      cloud_pool = await cloud.get_account()
+      expect(cloud_pool.staked_balance).toBe(3)
+      expect(cloud_pool.unstaked_balance).toBe(3)
+      expect(cloud_pool.available_when).toBe(1)
+
+      await bob.interact_external() // unstake
+      await bob.interact_external() // withdraw
+
+      await cloud.withdraw_all()
+
+      let new_cloud_balance = await cloud.wallet_balance()
+      expect(new_cloud_balance.total).toBeCloseTo(cloud_balance.total - 2 + 3 - 6 * CALL_FEE, 1)
+
+      cloud_pool = await cloud.get_account()
+      expect(cloud_pool.staked_balance).toBe(3)
+      expect(cloud_pool.unstaked_balance).toBe(0)
+      expect(cloud_pool.available_when).toBe(0)
+    })
+  });
 });

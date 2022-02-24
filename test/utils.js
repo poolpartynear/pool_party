@@ -1,6 +1,5 @@
 const { keyStores: { InMemoryKeyStore }, Near, KeyPair, Account,
-				Contract, utils: {format: { parseNearAmount } },
-				transactions: { deployContract } } = nearAPI
+				Contract, utils: {format: { parseNearAmount } }, transactions: { deployContract } } = nearAPI
 const BN = require('bn.js')
 const fs = require("fs")
 

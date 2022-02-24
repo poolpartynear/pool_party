@@ -80,6 +80,10 @@ export function number_of_winners(): i32 {
   return Pool.number_of_winners()
 }
 
+export function number_of_users(): i32 {
+  return Users.get_total_users()
+}
+
 
 // Getters mostly for testing
 export function get_user_tickets(idx: i32): u128 {
@@ -111,6 +115,14 @@ export function get_raffle_wait(): u64 {
 
 export function change_time_between_raffles(time: u64): bool {
   return DAO.change_time_between_raffles(time);
+}
+
+export function get_epoch_wait(): u64 {
+  return DAO.get_epoch_wait()
+}
+
+export function change_epoch_wait(epochs: u64): bool {
+  return DAO.change_epoch_wait(epochs);
 }
 
 export function get_max_users(): i32 {

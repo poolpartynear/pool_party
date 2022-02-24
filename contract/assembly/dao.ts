@@ -85,13 +85,6 @@ export function get_min_deposit(): u128 {
   return MIN_DEPOSIT
 }
 
-export function get_min_for_storage(): u128 {
-  if (storage.contains('dao_min_for_storage')) {
-    return storage.getSome<u128>('dao_min_for_storage')
-  }
-  return MIN_DEPOSIT_FOR_STORAGE
-}
-
 export function get_epoch_wait(): u64{
   if (storage.contains('dao_epoch_wait')) {
     return storage.getSome<u64>('dao_epoch_wait')
@@ -139,15 +132,9 @@ export function change_min_deposit(new_min_deposit: u128): bool {
   return true
 }
 
-export function change_min_for_storage(new_min_deposit: u128): bool {
+export function change_epoch_wait(epochs: u64): bool {
   fail_if_not_dao()
-  storage.set<u128>('dao_min_for_storage', new_min_deposit)
-  return true
-}
-
-export function change_epoch_wait(nbr_of_epoch_to_wait: u64): bool {
-  fail_if_not_dao()
-  storage.set<u64>('dao_epoch_wait', nbr_of_epoch_to_wait)
+  storage.set<u64>('dao_epoch_wait', epochs)
   return true
 }
 

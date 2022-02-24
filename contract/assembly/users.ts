@@ -1,4 +1,4 @@
-import { u128, math, PersistentMap, PersistentVector, storage } from 'near-sdk-as'
+import { u128, math, PersistentMap, PersistentVector, storage, logging } from 'near-sdk-as'
 
 // Memory persistent structures
 export const user_to_uid = new PersistentMap<string, i32>('a')
@@ -51,6 +51,10 @@ export function get_withdraw_turn_for(user: string): u64 {
   return user_withdraw_turn[uid]
 }
 
+export function get_total_users(): i32 {
+  return storage.getPrimitive<i32>('total_users', 0)
+}
+
 // Setters
 export function take_over_guardian(new_guardian: string): void {
   user_to_uid.set(new_guardian, 0)
@@ -68,6 +72,7 @@ export function add_new_user(user: string): i32 {
 
   if (vacancies.length > 0) {
     // We take the spot of someone that left
+    logging.log("Taking the spot of someone that left")
     uid = vacancies.pop()
   } else {
     // We set the structures needed for a new user
@@ -126,6 +131,7 @@ export function withdraw_all_for(user: string): void {
     user_to_uid.delete(user)
     uid_to_user.delete(uid)
     user_withdraw_turn[uid] = 0
+    vacancies.push(uid)
   }
 }
 
