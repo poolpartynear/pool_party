@@ -1,10 +1,14 @@
 import { storage, context, u128, ContractPromise, logging, env } from "near-sdk-as";
 import * as DAO from "./dao";
-import * as Utils from './utils'
 import * as Pool from './pool'
 import * as External from './external'
-import { PRIZE_UPDATE_INTERVAL, TGAS } from './constants'
-import { User } from "./model"
+import { TGAS, get_callback_result } from './aux'
+import { User } from "./users"
+
+
+// Amount of time between prize updates (10 sec)
+// To avoid blocking the interaction with external pool
+export const PRIZE_UPDATE_INTERVAL: u64 = 10000000000
 
 
 // Prize to distribute in next raffle
@@ -18,19 +22,23 @@ function set_pool_prize(prize: u128): void {
 }
 
 
+// Update prize function
 @nearBindgen
 class PoolArgs {
   constructor(public account_id: string) { }
 }
 
 export function update_prize(): void {
-  // Control that the updates are done with some minimum interval
+  assert(!DAO.is_emergency(), 'We will be back soon')
+
+  assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
+
   const now: u64 = env.block_timestamp()
   const next_update: u64 = storage.getPrimitive<u64>('next_update', 0)
 
   assert(now >= next_update, "Not enough time has passed")
 
-  // TODO: Check how to move it to the external module
+  // Inform external that we are going to interact
   External.start_interacting()
 
   // Ask how many NEARs we have staked in the external pool
@@ -46,12 +54,12 @@ export function update_prize(): void {
 }
 
 export function update_prize_callback(): bool {
+  External.stop_interacting()
 
-  let info = Utils.get_callback_result()
+  let info = get_callback_result()
 
   if (info.status != 1) {
-    // We didn't manage to get information from the pool
-    External.stop_interacting()
+    // We didn't manage to get information from the pool  
     return false
   }
 
@@ -70,8 +78,6 @@ export function update_prize_callback(): bool {
 
   // Update last_updated time
   storage.set<u64>('next_update', env.block_timestamp() + PRIZE_UPDATE_INTERVAL)
-
-  External.stop_interacting()
 
   return true
 }

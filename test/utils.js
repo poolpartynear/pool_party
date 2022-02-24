@@ -1,6 +1,5 @@
 const { keyStores: { InMemoryKeyStore }, Near, KeyPair, Account,
-				Contract, utils: {format: { parseNearAmount } },
-				transactions: { deployContract } } = nearAPI
+				Contract, utils: {format: { parseNearAmount } }, transactions: { deployContract } } = nearAPI
 const BN = require('bn.js')
 const fs = require("fs")
 
@@ -72,6 +71,7 @@ async function create_contract(accountId){
 										'get_pool_tickets', 'get_user_tickets', 'deposit_and_stake_callback',
 										'unstake_external_callback', 'withdraw_external_callback',
 										'withdraw_all_callback', "update_prize_callback",
+										'number_of_users',
 										
 										// Functions for DAO
 										'get_pool_fees', 'change_pool_fees', 'get_raffle_wait',
@@ -79,7 +79,7 @@ async function create_contract(accountId){
 										'change_max_users', 'get_min_deposit', 'change_min_deposit',
 										'get_max_deposit', 'change_max_deposit', 'get_guardian',
 										'propose_new_guardian', 'accept_being_guardian',
-										'emergency_start', 'emergency_stop',
+										'emergency_start', 'emergency_stop', 'change_epoch_wait',
 
 										// Token
 										'give_from_reserve']
@@ -98,4 +98,4 @@ async function deploy_mock_validator(accountId){
 	);
 }
 
-module.exports = {create_contract, deploy_mock_validator, getAccount}
+module.exports = {create_contract, deploy_mock_validator, getAccount, near}

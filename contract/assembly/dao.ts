@@ -1,5 +1,5 @@
-import { u128, context, storage, logging } from "near-sdk-as";
-import { user_to_idx, idx_to_user } from "./model";
+import { u128, context, storage } from "near-sdk-as";
+import * as Users from './users'
 
 // The raffle happens once per day
 const RAFFLE_WAIT: u64 = 86400000000000
@@ -7,20 +7,26 @@ const RAFFLE_WAIT: u64 = 86400000000000
 // We take a 5% of the raffle
 const POOL_FEES: u8 = 5
 
-// If the tree gets too high (>12 levels) traversing it gets expensive,
+// If the tree gets too high (>13 levels) traversing it gets expensive,
 // lets cap the max number of users, so traversing the tree is at max 90TGAS
-const MAX_USERS: i32 = 8100
+const MAX_USERS: i32 = 8191
 
 // The users cannot have more than a certain amount of NEARs,
-// to limit whale's size in the pool. Default: A Millon Nears
-const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000000")
+// to limit whale's size in the pool. Default: A thousand NEARs
+const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000")
 
 // The users cannot have deposit less than a certain amount of
 // NEARs, to limit sybill attacks. Default: 1 NEAR
 const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 
+// Minimum deposit needed for keeping storage (0.1 NEAR)
+const MIN_DEPOSIT_FOR_STORAGE: u128 = u128.from("100000000000000000000000")
 
-export function init(pool: string, guardian: string, dao: string): bool{
+// Amount of epochs to wait before unstaking (changed for testing)
+const UNSTAKE_EPOCH: u64 = 4
+
+
+export function init(pool: string, guardian: string, dao: string): bool {
   // Initialize the POOL, GUARDIAN and DAO
   // - The POOL is the external pool on which we stake all the NEAR
   // - The GUARDIAN can distribute tickets from the reserve to the users
@@ -38,7 +44,7 @@ export function init(pool: string, guardian: string, dao: string): bool{
 
 
 // Getters ---------------------------------------------------
-export function DAO(): string{
+export function DAO(): string {
   return storage.getPrimitive<string>('dao', '')
 }
 
@@ -79,12 +85,19 @@ export function get_min_deposit(): u128 {
   return MIN_DEPOSIT
 }
 
+export function get_epoch_wait(): u64{
+  if (storage.contains('dao_epoch_wait')) {
+    return storage.getSome<u64>('dao_epoch_wait')
+  }
+  return UNSTAKE_EPOCH
+}
+
 // Setters ---------------------------------------------------
 function fail_if_not_dao(): void {
   assert(context.predecessor == DAO(), "Only the DAO can call this function")
 }
 
-export function change_max_users(new_amount:i32): bool{
+export function change_max_users(new_amount: i32): bool {
   fail_if_not_dao()
   assert(new_amount > 0, "Max. users should be positive")
   assert(new_amount <= 8100, "For GAS reasons we enforce to have at max 8100 users")
@@ -92,13 +105,13 @@ export function change_max_users(new_amount:i32): bool{
   return true
 }
 
-export function change_time_between_raffles(new_wait:u64): bool{
+export function change_time_between_raffles(new_wait: u64): bool {
   fail_if_not_dao()
   storage.set<u64>('dao_raffle_wait', new_wait)
   return true
 }
 
-export function change_pool_fees(new_fees:u8): bool{
+export function change_pool_fees(new_fees: u8): bool {
   fail_if_not_dao()
 
   assert(new_fees <= 100, "Fee must be between 0 - 100")
@@ -119,42 +132,47 @@ export function change_min_deposit(new_min_deposit: u128): bool {
   return true
 }
 
-export function propose_new_guardian(new_guardian:string): bool{
+export function change_epoch_wait(epochs: u64): bool {
+  fail_if_not_dao()
+  storage.set<u64>('dao_epoch_wait', epochs)
+  return true
+}
+
+export function propose_new_guardian(new_guardian: string): bool {
   fail_if_not_dao()
   storage.set<string>('dao_proposed_guardian', new_guardian)
   return true
 }
 
-export function accept_being_guardian(): bool{
-  const PROPOSED = storage.getPrimitive<string>('dao_proposed_guardian', get_guardian())
+export function accept_being_guardian(): bool {
+  const proposed = storage.getPrimitive<string>('dao_proposed_guardian', get_guardian())
 
-  assert(context.predecessor == PROPOSED,
-         "Only the proposed guardian can accept to be guardian")
+  assert(context.predecessor == proposed,
+    "Only the proposed guardian can accept to be guardian")
 
   const new_guardian = context.predecessor
-  assert(!user_to_idx.contains(new_guardian),
-         "For simplicity, we don't allow an existing user to be guardian")
+  assert(!Users.is_registered(new_guardian),
+    "For simplicity, we don't allow an existing user to be guardian")
 
-  storage.set<string>("dao_guardian", PROPOSED)
-  user_to_idx.set(new_guardian, 0)
-  idx_to_user.set(0, new_guardian)
+  storage.set<string>("dao_guardian", proposed)
+  Users.take_over_guardian(new_guardian)
 
   return true
 }
 
 // Functions to start and stop an emergency (halts the contract)
-export function emergency_start(): bool{
+export function emergency_start(): bool {
   fail_if_not_dao()
   storage.set<bool>('emergency', true)
   return true
 }
 
-export function emergency_stop(): bool{
+export function emergency_stop(): bool {
   fail_if_not_dao()
   storage.set<bool>('emergency', false)
   return true
 }
 
-export function is_emergency(): bool{
+export function is_emergency(): bool {
   return storage.getPrimitive<bool>('emergency', false)
 }

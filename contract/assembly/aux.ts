@@ -1,7 +1,11 @@
-import { context, ContractPromise, ContractPromiseResult } from "near-sdk-as";
+import { context, ContractPromise, ContractPromiseResult, u128 } from "near-sdk-as";
 
+// Unit of TGAS
+export const TGAS: u64 = 1000000000000
+
+// Check that callback functions are called by this contract
+// and return results
 export function get_callback_result(): ContractPromiseResult {
-  // Check that callback functions are called by this contract
   assert(context.predecessor == context.contractName, "Just don't")
 
   // Return the result from the external pool
