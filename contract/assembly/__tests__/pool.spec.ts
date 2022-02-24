@@ -5,7 +5,7 @@ import { find_user_with_ticket } from '../users'
 import { get_to_unstake } from '../external';
 
 import { Context, u128, VMContext } from "near-sdk-as";
-import { DAO, get_external_pool, get_guardian, change_min_for_storage} from '../dao';
+import { DAO, get_external_pool, get_guardian, change_min_deposit} from '../dao';
 
 
 const NEAR: u128 = u128.from("1000000000000000000000000")
@@ -72,7 +72,7 @@ describe("Binary Tree", () => {
 
     // Remove min storage for testing purposes
     VMContext.setPredecessor_account_id("dao")
-    change_min_for_storage(u128.Zero)
+    change_min_deposit(u128.Zero)
 
     // The guardian deposits first
     set_context('theguardian', u128.One)
