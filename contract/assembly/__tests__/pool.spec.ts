@@ -21,6 +21,7 @@ function set_context(account_id: string, units: u128): void{
 
 describe("Initializing", () => {
   it("cannot be initialized twice", () => {
+    set_context(Context.contractName, u128.Zero)
     expect(()=>{init("pool", "guardian", "dao")}).not.toThrow()
     expect(()=>{init("e", "f", "g")}).toThrow()
     
@@ -32,7 +33,7 @@ describe("Initializing", () => {
 
 describe("User Handling", () => {
   it("correctly updates total_stake, to_unstake variables", () => {
-
+    set_context(Context.contractName, u128.Zero)
     init('external_pool', 'theguardian', 'dao' )  // init the contract
 
     // The guardian deposits first
@@ -40,7 +41,7 @@ describe("User Handling", () => {
     deposit_and_stake()
 
     // Poor man's callback simulation
-    VMContext.setPredecessor_account_id(Context.contractName)
+    set_context(Context.contractName, u128.Zero)
     deposit_and_stake_callback("theguardian", u128.One*NEAR)
 
     for(let i=1; i < 3; i++){
@@ -48,7 +49,7 @@ describe("User Handling", () => {
       deposit_and_stake()
 
       // Poor man's callback simulation
-      VMContext.setPredecessor_account_id(Context.contractName)
+      set_context(Context.contractName, u128.Zero)
       deposit_and_stake_callback(i.toString(), u128.from(i+1)*NEAR)
     }
 
@@ -68,6 +69,7 @@ describe("Binary Tree", () => {
     const subjects:i32 = 10
     const balance:u128 = u128.from("200000000000000000000")
 
+    set_context(Context.contractName, u128.Zero)
     init('external_pool', 'theguardian', 'dao' )  // init the contract
 
     // Remove min storage for testing purposes
@@ -164,10 +166,8 @@ describe("Binary Tree", () => {
 
 describe("Reserve Guardian", () => {
   it("the reserve guardian must be the first user", () => {
-
+    set_context(Context.contractName, u128.Zero)
     init('external_pool', 'theguardian', 'dao' )  // init the contract
-
-    const balance:u128 = u128.from("200000000000000000000")
 
     // If someone besides the guardian goes first it fails
     set_context("notguardian", u128.One)

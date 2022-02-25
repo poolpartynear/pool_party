@@ -2,7 +2,7 @@ const { create_contract } = require('./utils')
 const { utils: { format: { formatNearAmount, parseNearAmount } }, } = nearAPI
 
 describe('PoolParty DAO', function () {
-  let alice, bob, dao
+  let alice, bob, dao, pparty
   const alice_address = `alice.${nearConfig.contractName}`
   const bob_address = `bob.${nearConfig.contractName}`
   const dao_address = `dao.${nearConfig.contractName}`
@@ -13,11 +13,12 @@ describe('PoolParty DAO', function () {
     alice = await create_contract(alice_address)
     bob = await create_contract(bob_address)
     dao = await create_contract(dao_address)
+    pparty = await create_contract(nearConfig.contractName)
   });
 
   describe('dao', function () {
     it("inits", async function () {
-      await alice.init({ args: { pool: 'pool', guardian: 'guardian', dao: dao_address } })
+      await pparty.init({ args: { external_pool: 'external', guardian: 'guardian', dao: dao_address } })
     })
 
     it("the dao can change the fees", async function () {
@@ -112,7 +113,7 @@ describe('PoolParty DAO', function () {
     })
 
     it("ERROR: only dao can change min deposit", async function () {
-      await expect(alice.change_min_deposit({ args: { new_min_deposit: 30 } })).rejects.toThrow()
+      await expect(alice.change_min_deposit({ args: { new_min_deposit: "30" } })).rejects.toThrow()
     })
 
     it("ERROR: only dao can propose a guardian", async function () {

@@ -5,4 +5,4 @@ sed -i "1s/.*/$fline/" ../website/assets/js/blockchain/aux.js
 
 # Start website
 cd ../website
-./start_web
+./start_web.sh

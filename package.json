@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npm run build:contract && npm run build:web",
     "build:contract": "node contract/compile.js",
-    "build:contract:debug": "node contract/compile.js --debug",
+    "build:contract:debug": "node contract/compile.js",
     "build:web": "parcel build src/index.html --public-url ./",
     "dev:deploy:contract": "near dev-deploy",
     "deploy:contract": "near deploy",

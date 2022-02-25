@@ -1,4 +1,4 @@
-import { u128, context, storage } from "near-sdk-as";
+import { u128, context, storage, env } from "near-sdk-as";
 import * as Users from './users'
 
 // The raffle happens once per day
@@ -19,26 +19,30 @@ const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000")
 // NEARs, to limit sybill attacks. Default: 1 NEAR
 const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 
-// Minimum deposit needed for keeping storage (0.1 NEAR)
-const MIN_DEPOSIT_FOR_STORAGE: u128 = u128.from("100000000000000000000000")
-
 // Amount of epochs to wait before unstaking (changed for testing)
 const UNSTAKE_EPOCH: u64 = 4
 
 
-export function init(pool: string, guardian: string, dao: string): bool {
-  // Initialize the POOL, GUARDIAN and DAO
-  // - The POOL is the external pool on which we stake all the NEAR
+export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64 = 0): bool {
+  // Initialize the EXTERNAL, GUARDIAN and DAO
+  // - The EXTERNAL is the pool on which we stake all the NEAR
   // - The GUARDIAN can distribute tickets from the reserve to the users
   // - The DAO is the user than can change all the pool parameters
+
+  // Only the contract can call this function
+  assert(context.predecessor == context.contractName, `${context.predecessor} is not ${context.contractName}`)
+
   const initialized = storage.getPrimitive<bool>('initialized', false)
   assert(!initialized, "Already initialized")
   storage.set<bool>('initialized', true)
 
-  storage.set<string>('external_pool', pool)
+  storage.set<string>('external_pool', external_pool)
   storage.set<string>('dao', dao)
   storage.set<string>("dao_guardian", guardian)
 
+  // Next raffle is in one day
+  const DAY = 86400000000000
+  storage.set<u64>('nxt_raffle_tmstmp', env.block_timestamp() + days_to_1st_raffle*DAY)
   return true
 }
 

@@ -227,7 +227,7 @@ export function number_of_winners(): i32 {
 }
 
 export function get_winners(from: u32, until: u32): Array<Winner> {
-  assert(<i32>until < number_of_winners(), "'until' must be < number_of_winners")
+  assert(<i32>until <= number_of_winners(), "'until' must be < number_of_winners")
 
   let to_return: Array<Winner> = new Array<Winner>()
   for (let i: i32 = <i32>from; i < <i32>until; i++) {

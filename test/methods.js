@@ -3,8 +3,9 @@ const { utils: { format: { formatNearAmount, parseNearAmount } }, } = nearAPI
 
 const MGAS = 300000000000000
 
-init = async function (pool, guardian, dao, contract) {
-	return await contract.init({ args: { pool, guardian, dao } })
+init = async function (external_pool, guardian, dao) {
+	let init_contract = await create_contract(nearConfig.contractName)
+	return await init_contract.init({ args: { external_pool, guardian, dao } })
 }
 
 wallet_balance = async function (account_id) {
@@ -99,7 +100,7 @@ class User {
 		this.contract;
 	}
 
-	init(pool, guardian, dao) { return init(pool, guardian, dao, this.contract) }
+	init(pool, guardian, dao) { return init(pool, guardian, dao) }
 	wallet_balance() { return wallet_balance(this.accountId) }
 	deposit_and_stake(amount) { return deposit_and_stake(amount, this.contract) }
 	unstake(amount) { return unstake(amount, this.contract) }
