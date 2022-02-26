@@ -37,13 +37,13 @@ describe('PoolParty DAO', function () {
     })
 
     it("the dao can change the raffle time", async function () {
-      time = await alice.get_raffle_wait()
+      time = await alice.get_time_between_raffles()
       expect(time).toBe("86400000000000")
 
       let new_wait = "200"
       await dao.change_time_between_raffles({ args: { time: new_wait } })
 
-      time = await alice.get_raffle_wait()
+      time = await alice.get_time_between_raffles()
       expect(time).toBe("200")
     })
 
@@ -85,6 +85,16 @@ describe('PoolParty DAO', function () {
       expect(users).toBe(1000)
     })
 
+    it("the dao can change the min raffle", async function () {
+      min_raffle = await alice.get_min_raffle()
+      expect(min_raffle).toBe("100000000000000000000000")
+
+      await dao.change_min_raffle({ args: { new_min_raffle: "0" } })
+
+      min_raffle = await alice.get_min_raffle()
+      expect(min_raffle).toBe("0")
+    })
+
     it("the dao can change the guardian", async function () {
       guardian = await alice.get_guardian()
       expect(guardian).toBe('guardian')
@@ -108,16 +118,24 @@ describe('PoolParty DAO', function () {
       await expect(alice.change_time_between_raffles({ args: { time: "1" } })).rejects.toThrow()
     })
 
-    it("ERROR: only dao can change max users", async function () {
-      await expect(alice.change_max_users({ args: { max_users: 30 } })).rejects.toThrow()
-    })
-
     it("ERROR: only dao can change min deposit", async function () {
       await expect(alice.change_min_deposit({ args: { new_min_deposit: "30" } })).rejects.toThrow()
     })
 
+    it("ERROR: only dao can change max users", async function () {
+      await expect(alice.change_max_users({ args: { max_users: 30 } })).rejects.toThrow()
+    })
+
     it("ERROR: only dao can propose a guardian", async function () {
       await expect(alice.propose_new_guardian({ args: { guardian: 'guardian' } })).rejects.toThrow()
+    })
+
+    it("ERROR: only dao can change epoch wait between unstake/withdraw", async function () {
+      await expect(alice.change_epoch_wait({ args: { epochs: '0' } })).rejects.toThrow()
+    })
+
+    it("ERROR: only dao can change minimum amount to raffle", async function () {
+      await expect(alice.change_min_raffle({ args: { new_min_raffle: '0' } })).rejects.toThrow()
     })
 
     it("ERROR: Other people cannot accept being guardian", async function () {

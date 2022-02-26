@@ -193,7 +193,7 @@ export function raffle(): string {
   // Check if there is a prize to be raffled
   const prize: u128 = Prize.pool_prize()
 
-  if (prize == u128.Zero) { return "" }
+  if (prize < DAO.get_min_raffle()) { return "" }
 
   // Pick a random ticket as winner
   const winner: string = Users.choose_random_winner()
@@ -214,7 +214,7 @@ export function raffle(): string {
   logging.log(`Reserve: ${reserve_prize} - Prize: ${user_prize}`)
 
   // Set next raffle time
-  storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_raffle_wait())
+  storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_time_between_raffles())
   storage.set<u128>('prize', u128.Zero)
 
   winners.push(new Winner(winner, user_prize, now))

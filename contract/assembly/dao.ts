@@ -22,6 +22,8 @@ const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 // Amount of epochs to wait before unstaking (changed for testing)
 const UNSTAKE_EPOCH: u64 = 4
 
+// Minimum amount to Raffle (0.1 NEAR)
+const MIN_TO_RAFFLE: u128 = u128.from("100000000000000000000000")
 
 export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64): bool {
   // Initialize the EXTERNAL, GUARDIAN and DAO
@@ -57,15 +59,12 @@ export function get_guardian(): string {
   return storage.getPrimitive<string>('dao_guardian', '')
 }
 
-export function get_raffle_wait(): u64 {
+export function get_time_between_raffles(): u64 {
   return storage.getPrimitive<u64>('dao_raffle_wait', RAFFLE_WAIT)
 }
 
 export function get_pool_fees(): u8 {
-  if (storage.contains('dao_pool_fees')) {
-    return storage.getSome<u8>('dao_pool_fees')
-  }
-  return POOL_FEES
+  return storage.getPrimitive('dao_pool_fees', POOL_FEES)
 }
 
 export function get_external_pool(): string {
@@ -90,11 +89,15 @@ export function get_min_deposit(): u128 {
   return MIN_DEPOSIT
 }
 
-export function get_epoch_wait(): u64{
-  if (storage.contains('dao_epoch_wait')) {
-    return storage.getSome<u64>('dao_epoch_wait')
+export function get_min_raffle(): u128 {
+  if (storage.contains('dao_min_raffle')) {
+    return storage.getSome<u128>('dao_min_raffle')
   }
-  return UNSTAKE_EPOCH
+  return MIN_TO_RAFFLE
+}
+
+export function get_epoch_wait(): u64{
+  return storage.getPrimitive<u64>('dao_epoch_wait', UNSTAKE_EPOCH)
 }
 
 // Setters ---------------------------------------------------
@@ -102,11 +105,10 @@ function fail_if_not_dao(): void {
   assert(context.predecessor == DAO(), "Only the DAO can call this function")
 }
 
-export function change_max_users(new_amount: i32): bool {
+export function change_max_users(new_amount: u32): bool {
   fail_if_not_dao()
-  assert(new_amount > 0, "Max. users should be positive")
-  assert(new_amount <= 8100, "For GAS reasons we enforce to have at max 8100 users")
-  storage.set<i32>('dao_max_users', new_amount)
+  assert(new_amount <= 8191, "For GAS reasons we enforce to have at max 8191 users")
+  storage.set<i32>('dao_max_users', <i32>new_amount)
   return true
 }
 
@@ -134,6 +136,12 @@ export function change_max_deposit(new_max_deposit: u128): bool {
 export function change_min_deposit(new_min_deposit: u128): bool {
   fail_if_not_dao()
   storage.set<u128>('dao_min_deposit', new_min_deposit)
+  return true
+}
+
+export function change_min_raffle(new_min_raffle: u128): bool {
+  fail_if_not_dao()
+  storage.set<u128>('dao_min_raffle', new_min_raffle)
   return true
 }
 

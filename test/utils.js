@@ -65,7 +65,9 @@ async function create_contract(accountId){
 	let account = await getAccount(accountId)
 
 	const contractMethods = {
-		viewMethods: ['get_account'],
+		viewMethods: ['get_account', 'get_pool_fees', 'get_time_between_raffles',
+									'get_max_users', 'get_min_deposit', 'get_max_deposit',
+									'get_guardian', 'get_min_raffle'],
 		changeMethods: ['init', 'get_pool_info', 'deposit_and_stake', 'unstake',
 										'withdraw_all', 'update_prize', 'interact_external',
 										'get_pool_tickets', 'get_user_tickets', 'deposit_and_stake_callback',
@@ -74,12 +76,11 @@ async function create_contract(accountId){
 										'number_of_users',
 										
 										// Functions for DAO
-										'get_pool_fees', 'change_pool_fees', 'get_raffle_wait',
-										'change_time_between_raffles', 'get_max_users',
-										'change_max_users', 'get_min_deposit', 'change_min_deposit',
-										'get_max_deposit', 'change_max_deposit', 'get_guardian',
-										'propose_new_guardian', 'accept_being_guardian',
+										'change_pool_fees', 'change_time_between_raffles', 
+										'change_max_users', 'change_min_deposit',
+										'change_max_deposit', 'propose_new_guardian', 'accept_being_guardian',
 										'emergency_start', 'emergency_stop', 'change_epoch_wait',
+										'change_min_raffle',
 
 										// Token
 										'give_from_reserve']

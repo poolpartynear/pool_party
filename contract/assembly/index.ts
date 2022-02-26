@@ -109,8 +109,8 @@ export function change_pool_fees(fees: u8): bool {
   return DAO.change_pool_fees(fees);
 }
 
-export function get_raffle_wait(): u64 {
-  return DAO.get_raffle_wait()
+export function get_time_between_raffles(): u64 {
+  return DAO.get_time_between_raffles()
 }
 
 export function change_time_between_raffles(time: u64): bool {
@@ -139,6 +139,14 @@ export function get_min_deposit(): u128 {
 
 export function change_min_deposit(new_min_deposit: u128): bool {
   return DAO.change_min_deposit(new_min_deposit);
+}
+
+export function get_min_raffle(): u128 {
+  return DAO.get_min_raffle()
+}
+
+export function change_min_raffle(new_min_raffle: u128): bool {
+  return DAO.change_min_raffle(new_min_raffle);
 }
 
 export function get_max_deposit(): u128 {
