@@ -1,4 +1,4 @@
-import { u128, context, storage, env } from "near-sdk-as";
+import { u128, context, storage, env, logging } from "near-sdk-as";
 import * as Users from './users'
 
 // The raffle happens once per day
@@ -23,7 +23,7 @@ const MIN_DEPOSIT: u128 = u128.from("1000000000000000000000000")
 const UNSTAKE_EPOCH: u64 = 4
 
 
-export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64 = 0): bool {
+export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64): bool {
   // Initialize the EXTERNAL, GUARDIAN and DAO
   // - The EXTERNAL is the pool on which we stake all the NEAR
   // - The GUARDIAN can distribute tickets from the reserve to the users
@@ -40,9 +40,10 @@ export function init(external_pool: string, guardian: string, dao: string, days_
   storage.set<string>('dao', dao)
   storage.set<string>("dao_guardian", guardian)
 
-  // Next raffle is in one day
-  const DAY = 86400000000000
-  storage.set<u64>('nxt_raffle_tmstmp', env.block_timestamp() + days_to_1st_raffle*DAY)
+  const DAY: u64 = 86400000000000
+  const first_raffle: u64 = env.block_timestamp() + days_to_1st_raffle*DAY
+  storage.set<u64>('nxt_raffle_tmstmp', first_raffle)
+
   return true
 }
 

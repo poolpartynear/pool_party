@@ -18,7 +18,7 @@ describe('PoolParty DAO', function () {
 
   describe('dao', function () {
     it("inits", async function () {
-      await pparty.init({ args: { external_pool: 'external', guardian: 'guardian', dao: dao_address } })
+      await pparty.init({ args: { external_pool: 'external', guardian: 'guardian', dao: dao_address, days_to_1st_raffle: "0" } })
     })
 
     it("the dao can change the fees", async function () {
