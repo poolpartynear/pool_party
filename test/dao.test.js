@@ -97,7 +97,7 @@ describe('PoolParty DAO', function () {
 
     it("the dao can change the max raffle", async function () {
       max_raffle = await alice.get_max_raffle()
-      expect(max_raffle).toBe("100000000000000000000000000")
+      expect(max_raffle).toBe("50000000000000000000000000")
 
       await dao.change_max_raffle({ args: { new_max_raffle: "1000000000000000000000000000" } })
 

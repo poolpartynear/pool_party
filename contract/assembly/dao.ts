@@ -25,8 +25,8 @@ const UNSTAKE_EPOCH: u64 = 4
 // Minimum amount to Raffle (0.1 NEAR)
 const MIN_TO_RAFFLE: u128 = u128.from("100000000000000000000000")
 
-// Maximum amount to Raffle (100 NEAR)
-const MAX_TO_RAFFLE: u128 = u128.from("100000000000000000000000000")
+// Maximum amount to Raffle (50 NEAR)
+const MAX_TO_RAFFLE: u128 = u128.from("50000000000000000000000000")
 
 
 export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64): bool {
