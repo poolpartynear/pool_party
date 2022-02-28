@@ -1,14 +1,14 @@
 import { u128, math, PersistentMap, PersistentVector, storage, logging } from 'near-sdk-as'
 
 // Memory persistent structures
-export const user_to_uid = new PersistentMap<string, i32>('a')
-export const uid_to_user = new PersistentMap<i32, string>('g')
-export let user_staked = new PersistentVector<u128>('b')
-export let accum_weights = new PersistentVector<u128>('c') // accumulated number of tickets for a node and their child
-export let user_unstaked = new PersistentVector<u128>('d')
-export let user_withdraw_turn = new PersistentVector<u64>('e')
+export const user_to_uid = new PersistentMap<string, i32>('users-a')
+export const uid_to_user = new PersistentMap<i32, string>('users-b')
+export let user_staked = new PersistentVector<u128>('users-c')
+export let accum_weights = new PersistentVector<u128>('users-d') // accumulated number of tickets for a node and their child
+export let user_unstaked = new PersistentVector<u128>('users-e')
+export let user_withdraw_turn = new PersistentVector<u64>('users-f')
 
-export let vacancies = new PersistentVector<i32>('f') // When a user leaves, anyone can take their place
+export let vacancies = new PersistentVector<i32>('users-g') // When a user leaves, anyone can take their place
 
 
 // User structure

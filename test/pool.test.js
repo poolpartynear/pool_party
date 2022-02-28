@@ -8,8 +8,10 @@ describe('PoolParty', function () {
 
   const alice_address = `alice.${nearConfig.contractName}`
   const bob_address = `bob.${nearConfig.contractName}`
+  const cloud_address = `cloud.${nearConfig.contractName}`
 
   let guardian, dao, alice
+  let last_balances = [0, 0, 0, 0, 0]
 
   jest.setTimeout(1200000);
 
@@ -18,6 +20,7 @@ describe('PoolParty', function () {
     dao = await create_user(dao_address)
     alice = await create_user(alice_address)
     bob = await create_user(bob_address)
+    cloud = await create_user(cloud_address)
 
     // We use as pool a mock validator, it has the same interface as a validator
     // but it doubles your deposits, i.e. you deposit 1N -> you get 2N available
@@ -193,6 +196,7 @@ describe('PoolParty', function () {
 
       let balance = await guardian.get_account()
       expect(balance.staked_balance).toBeCloseTo(current_balances[0] + reserve_prize)
+      last_balances[0] = balance.staked_balance
 
       users = [guardian, alice, bob, dao]
 
@@ -201,11 +205,37 @@ describe('PoolParty', function () {
         expected += (users[i].accountId == winner) ? winner_prize : 0
         balance = await users[i].get_account()
         expect(balance.staked_balance).toBeCloseTo(expected)
+        last_balances[i] = balance.staked_balance
       }
 
       const new_pool_info = await alice.get_pool_info()
       expect(new_pool_info.total_staked).toBeCloseTo(pool_info.total_staked + prize, 1,
         "Total tickets uncorrectly updated")
+    })
+
+    it("correctly add more tickets to existing users", async function () {
+      // New user buys tickets, everything remains ok
+      await cloud.deposit_and_stake(5)
+
+      users = [guardian, alice, bob, dao]
+
+      // Other users didn't change
+      for (i = 0; i < 4; i++) {
+        balance = await users[i].get_account()
+        expect(balance.staked_balance).toBeCloseTo(last_balances[i], 3)
+      }
+
+      // Cloud has they deposit
+      balance = await cloud.get_account()
+
+      expect(balance.staked_balance).toBe(5)
+      expect(balance.unstaked_balance).toBe(0)
+
+      last_balances[4] = 5
+      const total = last_balances.reduce((partialSum, elem) => partialSum + elem, 0);
+
+      pool_info = await alice.get_pool_info()
+      expect(pool_info.total_staked).toBeCloseTo(total)
     })
 
     it("ERROR: cannot raffle again, it has to wait", async function () {

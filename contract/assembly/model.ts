@@ -26,4 +26,4 @@ export class Winner {
   ) { }
 }
 
-export let winners = new PersistentVector<Winner>('f')
+export let winners = new PersistentVector<Winner>('winners-a')

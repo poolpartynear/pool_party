@@ -1,4 +1,4 @@
-import { u128, context, storage, env, logging } from "near-sdk-as";
+import { u128, context, storage, env } from "near-sdk-as";
 import * as Users from './users'
 
 // The raffle happens once per day
