@@ -12,8 +12,8 @@ const POOL_FEES: u8 = 5
 const MAX_USERS: i32 = 8191
 
 // The users cannot have more than a certain amount of NEARs,
-// to limit whale's size in the pool. Default: A thousand NEARs
-const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000")
+// to limit whale's size in the pool. Default: Ten thousand NEARs
+const MAX_DEPOSIT: u128 = u128.from("10000000000000000000000000000")
 
 // The users cannot have deposit less than a certain amount of
 // NEARs, to limit sybill attacks. Default: 1 NEAR
@@ -24,6 +24,10 @@ const UNSTAKE_EPOCH: u64 = 4
 
 // Minimum amount to Raffle (0.1 NEAR)
 const MIN_TO_RAFFLE: u128 = u128.from("100000000000000000000000")
+
+// Maximum amount to Raffle (100 NEAR)
+const MAX_TO_RAFFLE: u128 = u128.from("100000000000000000000000000")
+
 
 export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64): bool {
   // Initialize the EXTERNAL, GUARDIAN and DAO
@@ -96,6 +100,13 @@ export function get_min_raffle(): u128 {
   return MIN_TO_RAFFLE
 }
 
+export function get_max_raffle(): u128 {
+  if (storage.contains('dao_max_raffle')) {
+    return storage.getSome<u128>('dao_max_raffle')
+  }
+  return MAX_TO_RAFFLE
+}
+
 export function get_epoch_wait(): u64{
   return storage.getPrimitive<u64>('dao_epoch_wait', UNSTAKE_EPOCH)
 }
@@ -142,6 +153,12 @@ export function change_min_deposit(new_min_deposit: u128): bool {
 export function change_min_raffle(new_min_raffle: u128): bool {
   fail_if_not_dao()
   storage.set<u128>('dao_min_raffle', new_min_raffle)
+  return true
+}
+
+export function change_max_raffle(new_max_raffle: u128): bool {
+  fail_if_not_dao()
+  storage.set<u128>('dao_max_raffle', new_max_raffle)
   return true
 }
 

@@ -149,6 +149,14 @@ export function change_min_raffle(new_min_raffle: u128): bool {
   return DAO.change_min_raffle(new_min_raffle);
 }
 
+export function get_max_raffle(): u128 {
+  return DAO.get_max_raffle()
+}
+
+export function change_max_raffle(new_max_raffle: u128): bool {
+  return DAO.change_max_raffle(new_max_raffle);
+}
+
 export function get_max_deposit(): u128 {
   return DAO.get_max_deposit()
 }

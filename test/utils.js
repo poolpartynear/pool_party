@@ -67,7 +67,7 @@ async function create_contract(accountId){
 	const contractMethods = {
 		viewMethods: ['get_account', 'get_pool_fees', 'get_time_between_raffles',
 									'get_max_users', 'get_min_deposit', 'get_max_deposit',
-									'get_guardian', 'get_min_raffle'],
+									'get_guardian', 'get_min_raffle', 'get_max_raffle'],
 		changeMethods: ['init', 'get_pool_info', 'deposit_and_stake', 'unstake',
 										'withdraw_all', 'update_prize', 'interact_external',
 										'get_pool_tickets', 'get_user_tickets', 'deposit_and_stake_callback',
@@ -80,7 +80,7 @@ async function create_contract(accountId){
 										'change_max_users', 'change_min_deposit',
 										'change_max_deposit', 'propose_new_guardian', 'accept_being_guardian',
 										'emergency_start', 'emergency_stop', 'change_epoch_wait',
-										'change_min_raffle',
+										'change_min_raffle', 'change_max_raffle',
 
 										// Token
 										'give_from_reserve']

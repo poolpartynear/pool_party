@@ -73,7 +73,11 @@ export function update_prize_callback(): bool {
     prize = our_user_in_pool.staked_balance - tickets
   }
 
-  logging.log("prize: " + prize.toString())
+  if (prize > DAO.get_max_raffle()){
+    prize = DAO.get_max_raffle()
+  }
+
+  logging.log(`New prize: ${prize.toString()} yN`)
   set_pool_prize(prize)
 
   // Update last_updated time

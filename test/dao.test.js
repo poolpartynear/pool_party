@@ -64,7 +64,7 @@ describe('PoolParty DAO', function () {
     it("the dao can change the max deposit", async function () {
       let max_deposit = await alice.get_max_deposit()
       max_deposit = formatNearAmount(max_deposit)
-      expect(max_deposit).toBe("1,000")
+      expect(max_deposit).toBe("10,000")
 
       let new_max_deposit = "20000"
       new_max_deposit = parseNearAmount(new_max_deposit)
@@ -93,6 +93,16 @@ describe('PoolParty DAO', function () {
 
       min_raffle = await alice.get_min_raffle()
       expect(min_raffle).toBe("0")
+    })
+
+    it("the dao can change the max raffle", async function () {
+      max_raffle = await alice.get_max_raffle()
+      expect(max_raffle).toBe("100000000000000000000000000")
+
+      await dao.change_max_raffle({ args: { new_max_raffle: "1000000000000000000000000000" } })
+
+      max_raffle = await alice.get_max_raffle()
+      expect(max_raffle).toBe("1000000000000000000000000000")
     })
 
     it("the dao can change the guardian", async function () {
@@ -136,6 +146,10 @@ describe('PoolParty DAO', function () {
 
     it("ERROR: only dao can change minimum amount to raffle", async function () {
       await expect(alice.change_min_raffle({ args: { new_min_raffle: '0' } })).rejects.toThrow()
+    })
+
+    it("ERROR: only dao can change maximum amount to raffle", async function () {
+      await expect(alice.change_max_raffle({ args: { new_max_raffle: '0' } })).rejects.toThrow()
     })
 
     it("ERROR: Other people cannot accept being guardian", async function () {
