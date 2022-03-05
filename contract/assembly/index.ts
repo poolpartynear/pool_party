@@ -64,7 +64,7 @@ export function update_prize(): void {
   Prize.update_prize();
 }
 
-export function update_prize_callback(): bool {
+export function update_prize_callback(): u128 {
   return Prize.update_prize_callback()
 }
 

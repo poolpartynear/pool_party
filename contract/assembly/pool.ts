@@ -25,7 +25,7 @@ export function get_info(): PoolInfo {
   // next timestamp to do the raffle, and if we should call the external pool
   const tickets: u128 = get_tickets() - External.get_to_unstake()
   const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
-  const prize: u128 = Prize.pool_prize()
+  const prize: u128 = Prize.get_pool_prize()
 
   const reserve: u128 = Users.get_staked_for(DAO.get_guardian())
 
@@ -191,7 +191,7 @@ export function raffle(): string {
   assert(now >= next_raffle, "Not enough time has passed")
 
   // Check if there is a prize to be raffled
-  const prize: u128 = Prize.pool_prize()
+  const prize: u128 = Prize.get_pool_prize()
 
   if (prize < DAO.get_min_raffle()) { return "" }
 

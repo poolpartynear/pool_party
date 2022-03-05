@@ -12,7 +12,7 @@ export const PRIZE_UPDATE_INTERVAL: u64 = 10000000000
 
 
 // Prize to distribute in next raffle
-export function pool_prize(): u128 {
+export function get_pool_prize(): u128 {
   if (storage.contains('prize')) { return storage.getSome<u128>('prize') }
   return u128.Zero
 }
@@ -45,22 +45,22 @@ export function update_prize(): void {
   const args: PoolArgs = new PoolArgs(context.contractName)
 
   const promise = ContractPromise.create(
-    DAO.get_external_pool(), "get_account", args.encode(), 15 * TGAS, u128.Zero
+    DAO.get_external_pool(), "get_account", args.encode(), 20 * TGAS, u128.Zero
   )
   const callbackPromise = promise.then(
-    context.contractName, "update_prize_callback", "", 15 * TGAS
+    context.contractName, "update_prize_callback", "", 20 * TGAS
   )
   callbackPromise.returnAsResult();
 }
 
-export function update_prize_callback(): bool {
+export function update_prize_callback(): u128 {
   External.stop_interacting()
 
   let info = get_callback_result()
 
   if (info.status != 1) {
     // We didn't manage to get information from the pool  
-    return false
+    return get_pool_prize()
   }
 
   const our_user_in_pool = decode<User>(info.buffer);
@@ -83,5 +83,5 @@ export function update_prize_callback(): bool {
   // Update last_updated time
   storage.set<u64>('next_update', env.block_timestamp() + PRIZE_UPDATE_INTERVAL)
 
-  return true
+  return prize
 }
