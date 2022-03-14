@@ -31,7 +31,7 @@ class PoolArgs {
 export function update_prize(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 40 * TGAS, "Please use at least 40Tgas")
 
   const now: u64 = env.block_timestamp()
   const next_update: u64 = storage.getPrimitive<u64>('next_update', 0)

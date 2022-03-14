@@ -60,7 +60,7 @@ export function get_account(account_id: string): Users.User {
 export function deposit_and_stake(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 200 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 80 * TGAS, "Please use at least 80Tgas")
 
   const amount: u128 = context.attachedDeposit
   const min_amount = DAO.get_min_deposit()
@@ -94,7 +94,7 @@ export function deposit_and_stake(): void {
 
   // We add 100yn to cover the cost of staking in an external pool
   const promise: ContractPromise = ContractPromise.create(
-    DAO.get_external_pool(), "deposit_and_stake", "{}", 50 * TGAS, amount + u128.from(100)
+    DAO.get_external_pool(), "deposit_and_stake", "{}", 12 * TGAS, amount + u128.from(100)
   )
 
   // Create a callback to _deposit_and_stake
@@ -104,7 +104,7 @@ export function deposit_and_stake(): void {
     context.contractName,
     "deposit_and_stake_callback",
     args.encode(),
-    110 * TGAS
+    45 * TGAS
   )
 }
 
@@ -158,7 +158,7 @@ export function unstake(amount: u128): bool {
 export function withdraw_all(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 20 * TGAS, "Use at least 20Tgas")
 
   const user: string = context.predecessor
 
