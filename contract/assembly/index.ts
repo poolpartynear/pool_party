@@ -99,6 +99,10 @@ export function get_user_by_id(idx: i32): string {
   return ""
 }
 
+export function get_to_unstake(): u128 {
+  return External.get_to_unstake()
+}
+
 
 // DAO
 export function get_pool_fees(): u8 {
