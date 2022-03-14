@@ -118,7 +118,6 @@ function fail_if_not_dao(): void {
 
 export function change_max_users(new_amount: u32): bool {
   fail_if_not_dao()
-  assert(new_amount <= 8191, "For GAS reasons we enforce to have at max 8191 users")
   storage.set<i32>('dao_max_users', <i32>new_amount)
   return true
 }
