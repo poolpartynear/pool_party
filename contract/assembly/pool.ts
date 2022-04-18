@@ -113,6 +113,9 @@ export function deposit_and_stake_callback(user: string, amount: u128): void {
 
   if (response.status == 1) {
     // It worked, give tickets to the user
+    logging.log(
+      `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "stake_for_user", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}"}}`
+    );
     Users.stake_tickets_for(user, amount)
   } else {
     // It failed, remove tickets from the pool and return the money
@@ -136,8 +139,8 @@ export function unstake(amount: u128): bool {
   // Check if it has enough money
   assert(amount <= user_tickets, "Not enough money")
 
-  if (user_tickets - amount < DAO.get_min_deposit()) {
-    logging.log("Unstaking all from user, since they cannot pay storage")
+  const withdraw_all: bool = (user_tickets - amount) < DAO.get_min_deposit();
+  if (withdraw_all) {
     amount = user_tickets
   }
 
@@ -149,6 +152,10 @@ export function unstake(amount: u128): bool {
 
   // update user info
   Users.unstake_tickets_for(user, amount)
+
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "unstake", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}", "all": "${withdraw_all}"}}`
+  );
 
   return true
 }
@@ -174,8 +181,11 @@ export function withdraw_all(): void {
   Users.withdraw_all_for(user)
 
   // Send money to the user, always succeed
-  logging.log(`Sending ${amount} to ${user}`)
   ContractPromiseBatch.create(context.predecessor).transfer(amount)
+
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "transfer", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}"}}`
+  );
 }
 
 
@@ -211,7 +221,13 @@ export function raffle(): string {
 
   set_tickets(get_tickets() + prize)
 
-  logging.log(`Reserve: ${reserve_prize} - Prize: ${user_prize}`)
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "prize-user", "data": {"pool": "${context.contractName}", "user": "${winner}", "amount": "${user_prize}"}}`
+  );
+
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "prize-reserve", "data": {"pool": "${context.contractName}", "user": "${guardian}", "amount": "${reserve_prize}"}}`
+  );
 
   // Set next raffle time
   storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_time_between_raffles())
