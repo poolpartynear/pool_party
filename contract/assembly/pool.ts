@@ -23,15 +23,19 @@ export function set_tickets(tickets: u128): void {
 export function get_info(): PoolInfo {
   // Returns the: amount of tickets in the pool, current prize, 
   // next timestamp to do the raffle, and if we should call the external pool
-  const tickets: u128 = get_tickets() - External.get_to_unstake()
+  const to_unstake: u128 = External.get_to_unstake()
+  const tickets: u128 = get_tickets() - to_unstake
   const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
   const prize: u128 = Prize.get_pool_prize()
+  const fees: u8 = DAO.get_pool_fees()
+  const last_prize_update: u64 = Prize.get_last_prize_update()
 
   const reserve: u128 = Users.get_staked_for(DAO.get_guardian())
 
   const withdraw_external_ready: bool = External.can_withdraw_external()
 
-  return new PoolInfo(tickets, reserve, prize, next_raffle, withdraw_external_ready)
+  return new PoolInfo(tickets, to_unstake, reserve, prize, fees, last_prize_update,
+                      next_raffle, withdraw_external_ready)
 }
 
 
@@ -169,19 +173,17 @@ export function withdraw_all(): void {
 
   const user: string = context.predecessor
 
-  assert(user != DAO.get_guardian(), "The guardian cannot withdraw money")
-
   assert(Users.is_registered(user), "User is not registered")
+
+  assert(user != DAO.get_guardian(), "The guardian cannot withdraw money")
 
   assert(External.get_current_turn() >= Users.get_withdraw_turn_for(user), "Withdraw not ready")
 
-  const amount: u128 = Users.get_unstaked_for(user)
-  assert(amount > u128.Zero, "Nothing to unstake")
-
-  Users.withdraw_all_for(user)
+  const amount: u128 = Users.withdraw_all_for(user)
+  assert(amount > u128.Zero, "Nothing to withdraw")
 
   // Send money to the user, always succeed
-  ContractPromiseBatch.create(context.predecessor).transfer(amount)
+  ContractPromiseBatch.create(user).transfer(amount)
 
   logging.log(
     `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "transfer", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}"}}`
