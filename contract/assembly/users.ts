@@ -121,18 +121,22 @@ export function unstake_tickets_for(user: string, amount: u128): void {
   user_unstaked[uid] = user_unstaked[uid] + amount
 }
 
-export function withdraw_all_for(user: string): void {
+export function withdraw_all_for(user: string): u128 {
   const uid: i32 = get_user_uid(user)
+  const amount: u128 = user_unstaked[uid]
 
+  // Remove from unstaked
   user_unstaked[uid] = u128.Zero
 
-  // Check if the user has tickets left, if not, we "remove" them
+  // Check if the user has tickets left, if not, we "remove" the user
   if (user_staked[uid] == u128.Zero) {
     user_to_uid.delete(user)
     uid_to_user.delete(uid)
     user_withdraw_turn[uid] = 0
     vacancies.push(uid)
   }
+
+  return amount
 }
 
 

@@ -28,15 +28,23 @@ class PoolArgs {
   constructor(public account_id: string) { }
 }
 
+export function get_last_prize_update(): u64 {
+  return storage.getPrimitive<u64>('last_prize_update', 0)
+}
+
+function set_last_prize_update(timestamp: u64): void {
+  storage.set<u64>('last_prize_update', timestamp)
+}
+
 export function update_prize(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 40 * TGAS, "Please use at least 40Tgas")
 
   const now: u64 = env.block_timestamp()
-  const next_update: u64 = storage.getPrimitive<u64>('next_update', 0)
+  const last_update: u64 = get_last_prize_update()
 
-  assert(now >= next_update, "Not enough time has passed")
+  assert(now >= last_update + PRIZE_UPDATE_INTERVAL, "Not enough time has passed")
 
   // Inform external that we are going to interact
   External.start_interacting()
@@ -73,7 +81,7 @@ export function update_prize_callback(): u128 {
     prize = our_user_in_pool.staked_balance - tickets
   }
 
-  if (prize > DAO.get_max_raffle()){
+  if (prize > DAO.get_max_raffle()) {
     prize = DAO.get_max_raffle()
   }
 
@@ -81,7 +89,7 @@ export function update_prize_callback(): u128 {
   set_pool_prize(prize)
 
   // Update last_updated time
-  storage.set<u64>('next_update', env.block_timestamp() + PRIZE_UPDATE_INTERVAL)
+  set_last_prize_update(env.block_timestamp())
 
   return prize
 }

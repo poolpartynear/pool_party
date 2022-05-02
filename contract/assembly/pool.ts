@@ -23,15 +23,19 @@ export function set_tickets(tickets: u128): void {
 export function get_info(): PoolInfo {
   // Returns the: amount of tickets in the pool, current prize, 
   // next timestamp to do the raffle, and if we should call the external pool
-  const tickets: u128 = get_tickets() - External.get_to_unstake()
+  const to_unstake: u128 = External.get_to_unstake()
+  const tickets: u128 = get_tickets() - to_unstake
   const next_raffle: u64 = storage.getPrimitive<u64>('nxt_raffle_tmstmp', 0)
   const prize: u128 = Prize.get_pool_prize()
+  const fees: u8 = DAO.get_pool_fees()
+  const last_prize_update: u64 = Prize.get_last_prize_update()
 
   const reserve: u128 = Users.get_staked_for(DAO.get_guardian())
 
   const withdraw_external_ready: bool = External.can_withdraw_external()
 
-  return new PoolInfo(tickets, reserve, prize, next_raffle, withdraw_external_ready)
+  return new PoolInfo(tickets, to_unstake, reserve, prize, fees, last_prize_update,
+                      next_raffle, withdraw_external_ready)
 }
 
 
@@ -60,7 +64,7 @@ export function get_account(account_id: string): Users.User {
 export function deposit_and_stake(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 200 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 80 * TGAS, "Please use at least 80Tgas")
 
   const amount: u128 = context.attachedDeposit
   const min_amount = DAO.get_min_deposit()
@@ -94,7 +98,7 @@ export function deposit_and_stake(): void {
 
   // We add 100yn to cover the cost of staking in an external pool
   const promise: ContractPromise = ContractPromise.create(
-    DAO.get_external_pool(), "deposit_and_stake", "{}", 50 * TGAS, amount + u128.from(100)
+    DAO.get_external_pool(), "deposit_and_stake", "{}", 12 * TGAS, amount + u128.from(100)
   )
 
   // Create a callback to _deposit_and_stake
@@ -104,7 +108,7 @@ export function deposit_and_stake(): void {
     context.contractName,
     "deposit_and_stake_callback",
     args.encode(),
-    110 * TGAS
+    45 * TGAS
   )
 }
 
@@ -113,6 +117,9 @@ export function deposit_and_stake_callback(user: string, amount: u128): void {
 
   if (response.status == 1) {
     // It worked, give tickets to the user
+    logging.log(
+      `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "stake_for_user", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}"}}`
+    );
     Users.stake_tickets_for(user, amount)
   } else {
     // It failed, remove tickets from the pool and return the money
@@ -136,8 +143,8 @@ export function unstake(amount: u128): bool {
   // Check if it has enough money
   assert(amount <= user_tickets, "Not enough money")
 
-  if (user_tickets - amount < DAO.get_min_deposit()) {
-    logging.log("Unstaking all from user, since they cannot pay storage")
+  const withdraw_all: bool = (user_tickets - amount) < DAO.get_min_deposit();
+  if (withdraw_all) {
     amount = user_tickets
   }
 
@@ -150,6 +157,10 @@ export function unstake(amount: u128): bool {
   // update user info
   Users.unstake_tickets_for(user, amount)
 
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "unstake", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}", "all": "${withdraw_all}"}}`
+  );
+
   return true
 }
 
@@ -158,24 +169,25 @@ export function unstake(amount: u128): bool {
 export function withdraw_all(): void {
   assert(!DAO.is_emergency(), 'We will be back soon')
 
-  assert(context.prepaidGas >= 60 * TGAS, "Not enough gas")
+  assert(context.prepaidGas >= 20 * TGAS, "Use at least 20Tgas")
 
   const user: string = context.predecessor
 
-  assert(user != DAO.get_guardian(), "The guardian cannot withdraw money")
-
   assert(Users.is_registered(user), "User is not registered")
+
+  assert(user != DAO.get_guardian(), "The guardian cannot withdraw money")
 
   assert(External.get_current_turn() >= Users.get_withdraw_turn_for(user), "Withdraw not ready")
 
-  const amount: u128 = Users.get_unstaked_for(user)
-  assert(amount > u128.Zero, "Nothing to unstake")
-
-  Users.withdraw_all_for(user)
+  const amount: u128 = Users.withdraw_all_for(user)
+  assert(amount > u128.Zero, "Nothing to withdraw")
 
   // Send money to the user, always succeed
-  logging.log(`Sending ${amount} to ${user}`)
-  ContractPromiseBatch.create(context.predecessor).transfer(amount)
+  ContractPromiseBatch.create(user).transfer(amount)
+
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "transfer", "data": {"pool": "${context.contractName}", "user": "${user}", "amount": "${amount}"}}`
+  );
 }
 
 
@@ -211,7 +223,13 @@ export function raffle(): string {
 
   set_tickets(get_tickets() + prize)
 
-  logging.log(`Reserve: ${reserve_prize} - Prize: ${user_prize}`)
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "prize-user", "data": {"pool": "${context.contractName}", "user": "${winner}", "amount": "${user_prize}"}}`
+  );
+
+  logging.log(
+    `EVENT_JSON:{"standard": "nep297", "version": "1.0.0", "event": "prize-reserve", "data": {"pool": "${context.contractName}", "user": "${guardian}", "amount": "${reserve_prize}"}}`
+  );
 
   // Set next raffle time
   storage.set<u64>('nxt_raffle_tmstmp', now + DAO.get_time_between_raffles())
