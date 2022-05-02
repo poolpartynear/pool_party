@@ -18,12 +18,12 @@ describe('PoolParty DAO', function () {
 
   describe('dao', function () {
     it("inits", async function () {
-      await pparty.init({ args: { external_pool: 'external', guardian: 'guardian', dao: dao_address, days_to_1st_raffle: "0" } })
+      await pparty.init({ args: { external_pool: 'external', guardian: 'guardian', dao: dao_address, first_raffle: "0" } })
     })
 
     it("the dao can change the fees", async function () {
       let fees = await alice.get_pool_fees()
-      expect(fees).toBe(5)
+      expect(fees).toBe(1)
 
       await dao.change_pool_fees({ args: { fees: 10 } })
 
@@ -64,7 +64,7 @@ describe('PoolParty DAO', function () {
     it("the dao can change the max deposit", async function () {
       let max_deposit = await alice.get_max_deposit()
       max_deposit = formatNearAmount(max_deposit)
-      expect(max_deposit).toBe("10,000")
+      expect(max_deposit).toBe("1,000")
 
       let new_max_deposit = "20000"
       new_max_deposit = parseNearAmount(new_max_deposit)

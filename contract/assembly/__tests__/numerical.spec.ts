@@ -13,6 +13,8 @@ describe("u128 test", () => {
 
   it("underflow raises error", () => {
     expect(()=>{ u128.Zero - u128.One }).toThrow()
+    expect(()=>{ u128.from("0") - u128.from("2") }).toThrow()
+    expect(()=>{ u128.from(0) - u128.from(2) }).toThrow()
   })
 })
 

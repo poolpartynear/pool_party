@@ -5,15 +5,15 @@ import * as Users from './users'
 const RAFFLE_WAIT: u64 = 86400000000000
 
 // We take a 5% of the raffle
-const POOL_FEES: u8 = 5
+const POOL_FEES: u8 = 1
 
 // If the tree gets too high (>13 levels) traversing it gets expensive,
 // lets cap the max number of users, so traversing the tree is at max 90TGAS
 const MAX_USERS: i32 = 8191
 
 // The users cannot have more than a certain amount of NEARs,
-// to limit whale's size in the pool. Default: Ten thousand NEARs
-const MAX_DEPOSIT: u128 = u128.from("10000000000000000000000000000")
+// to limit whale's size in the pool. Default: A thousand NEARs
+const MAX_DEPOSIT: u128 = u128.from("1000000000000000000000000000")
 
 // The users cannot have deposit less than a certain amount of
 // NEARs, to limit sybill attacks. Default: 1 NEAR
@@ -29,7 +29,7 @@ const MIN_TO_RAFFLE: u128 = u128.from("100000000000000000000000")
 const MAX_TO_RAFFLE: u128 = u128.from("50000000000000000000000000")
 
 
-export function init(external_pool: string, guardian: string, dao: string, days_to_1st_raffle:u64): bool {
+export function init(external_pool: string, guardian: string, dao: string, first_raffle:u64): bool {
   // Initialize the EXTERNAL, GUARDIAN and DAO
   // - The EXTERNAL is the pool on which we stake all the NEAR
   // - The GUARDIAN can distribute tickets from the reserve to the users
@@ -46,8 +46,6 @@ export function init(external_pool: string, guardian: string, dao: string, days_
   storage.set<string>('dao', dao)
   storage.set<string>("dao_guardian", guardian)
 
-  const DAY: u64 = 86400000000000
-  const first_raffle: u64 = env.block_timestamp() + days_to_1st_raffle*DAY
   storage.set<u64>('nxt_raffle_tmstmp', first_raffle)
 
   return true

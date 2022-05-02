@@ -183,7 +183,7 @@ describe('PoolParty', function () {
       expect(account.available_when).toBe(2)
     })
 
-    it("on a raffle, the reserve gets a 5% and the winner the rest", async function () {
+    it("on a raffle, the reserve gets a 1% and the winner the rest", async function () {
       let current_balances = [1, 9, 11, 1.123456 - 0.001]
       let prize = 10 + 12.123 + 1.123456 + 1
 
@@ -191,7 +191,7 @@ describe('PoolParty', function () {
 
       let winner = await alice.raffle()
 
-      let reserve_prize = prize * 0.05
+      let reserve_prize = prize * 0.01
       let winner_prize = prize - reserve_prize
 
       let balance = await guardian.get_account()

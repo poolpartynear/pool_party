@@ -5,7 +5,7 @@ const MGAS = 300000000000000
 
 init = async function (external_pool, guardian, dao) {
 	let init_contract = await create_contract(nearConfig.contractName)
-	return await init_contract.init({ args: { external_pool, guardian, dao, days_to_1st_raffle: "0" } })
+	return await init_contract.init({ args: { external_pool, guardian, dao, first_raffle: "0" } })
 }
 
 wallet_balance = async function (account_id) {
